@@ -20,6 +20,7 @@ import { CustomerLayout } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { formatDate, formatOrderNumber } from '@/utils/formatters';
 import { canCancel, canTrack, orderStatusLabel, orderStatusTone } from '@/utils/order-status';
+import { formatPhone } from '@/utils/phone';
 
 export default function OrderDetailScreen() {
   const confirm = useConfirm();
@@ -111,7 +112,7 @@ export default function OrderDetailScreen() {
               {[address.city, address.state].filter(Boolean).join(', ')} {address.pincode}
             </Text>
             <Text variant="bodySmallMuted">{address.country}</Text>
-            <Text variant="bodySmallMuted">{address.phone}</Text>
+            <Text variant="bodySmallMuted">{formatPhone(address.phone)}</Text>
           </View>
         </>
       )}

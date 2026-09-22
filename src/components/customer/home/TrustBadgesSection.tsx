@@ -1,12 +1,12 @@
 import { StyleSheet, View } from 'react-native';
 import type { DimensionValue } from 'react-native';
-import { CustomerColors } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { Icon } from '../ui/Icon';
 import { Text } from '../ui/Text';
 import { Section } from '../layout/Section';
 import { TRUST_BADGES } from './constants';
 import type { TrustBadge } from './constants';
+import { useThemeColors } from '@/theme/theme-provider';
 
 interface Props {
   badges?: TrustBadge[];
@@ -15,6 +15,7 @@ interface Props {
 }
 
 export function TrustBadgesSection({ badges = TRUST_BADGES, columns = 2, tone = 'dark' }: Props) {
+  const colors = useThemeColors();
   const onDark = tone === 'dark';
   const basis: DimensionValue = `${100 / columns}%`;
 
@@ -23,11 +24,7 @@ export function TrustBadgesSection({ badges = TRUST_BADGES, columns = 2, tone = 
       <View style={styles.grid}>
         {badges.map(badge => (
           <View key={badge.key} style={[styles.cell, { flexBasis: basis }]}>
-            <Icon
-              name={badge.icon}
-              size={26}
-              color={onDark ? CustomerColors.accent : CustomerColors.text}
-            />
+            <Icon name={badge.icon} size={26} color={onDark ? colors.accent : colors.text} />
             <Text variant="cardTitle" tone={onDark ? 'inverse' : 'default'}>
               {badge.title}
             </Text>

@@ -41,6 +41,7 @@ import { ErrorBoundary } from '@/components/customer/layout/ErrorBoundary';
 import { OfflineBanner } from '@/components/customer/layout/OfflineBanner';
 import { toastConfig } from '@/components/customer/ui/toast-config';
 import { ConfirmProvider } from '@/providers/ConfirmProvider';
+import { ThemeProvider, useTheme } from '@/theme/theme-provider';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -59,6 +60,10 @@ function AuthGate() {
   // router.replace is a no-op until the root navigator has mounted.
   const navigationState = useRootNavigationState();
   const navigatorReady = Boolean(navigationState?.key);
+
+  // The stored light/dark preference is read back asynchronously; painting before
+  // it lands would flash the wrong scheme.
+  const { ready: themeReady } = useTheme();
 
   const [fontsLoaded] = useFonts({
     Poppins_300Light,
@@ -151,7 +156,7 @@ function AuthGate() {
 
   // The native splash stays up until fonts, session and routing have all settled,
   // so the first painted frame is always the correct screen.
-  const ready = fontsLoaded && bootstrapped && routed;
+  const ready = fontsLoaded && bootstrapped && routed && themeReady;
   useEffect(() => {
     if (ready) SplashScreen.hideAsync();
   }, [ready]);
@@ -162,21 +167,23 @@ function AuthGate() {
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <ReduxProvider>
-        <QueryProvider>
-          <StatusBar style="dark" />
-          {/* Inside the providers so the fallback screen can still be themed, and
+      <ThemeProvider>
+        <ReduxProvider>
+          <QueryProvider>
+            <StatusBar style="auto" />
+            {/* Inside the providers so the fallback screen can still be themed, and
               so a crash in a screen does not take the navigator's context with it. */}
-          <ErrorBoundary>
-            <ConfirmProvider>
-              <AuthGate />
-            </ConfirmProvider>
-          </ErrorBoundary>
-          <OfflineBanner />
-          {/* Last, so toasts and dialogs render above every screen. */}
-          <Toast config={toastConfig} topOffset={60} />
-        </QueryProvider>
-      </ReduxProvider>
+            <ErrorBoundary>
+              <ConfirmProvider>
+                <AuthGate />
+              </ConfirmProvider>
+            </ErrorBoundary>
+            <OfflineBanner />
+            {/* Last, so toasts and dialogs render above every screen. */}
+            <Toast config={toastConfig} topOffset={60} />
+          </QueryProvider>
+        </ReduxProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

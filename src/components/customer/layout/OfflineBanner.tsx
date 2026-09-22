@@ -2,14 +2,18 @@ import { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import NetInfo from '@react-native-community/netinfo';
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { Icon } from '../ui/Icon';
 import { Text } from '../ui/Text';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemeColors, useThemedStyles } from '@/theme/theme-provider';
 
 // Without this, losing signal mid-browse just produced failed requests and empty
 // states, which reads as "the shop is broken" rather than "you are offline".
 export function OfflineBanner() {
+  const styles = useThemedStyles(makeStyles);
+  const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const [offline, setOffline] = useState(false);
   const slide = useRef(new Animated.Value(0)).current;
@@ -40,7 +44,7 @@ export function OfflineBanner() {
       accessibilityLiveRegion="polite"
       style={[styles.bar, { height, paddingTop: insets.top, transform: [{ translateY }] }]}
     >
-      <Icon name="alert" size={14} color={CustomerColors.textInverse} />
+      <Icon name="alert" size={14} color={colors.textInverse} />
       <Text variant="caption" tone="inverse">
         No internet connection
       </Text>
@@ -48,18 +52,19 @@ export function OfflineBanner() {
   );
 }
 
-const styles = StyleSheet.create({
-  bar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 100,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing[2],
-    paddingHorizontal: CustomerLayout.screenPaddingH,
-    backgroundColor: CustomerColors.bgDark,
-  },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    bar: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      zIndex: 100,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: Spacing[2],
+      paddingHorizontal: CustomerLayout.screenPaddingH,
+      backgroundColor: c.bgDark,
+    },
+  });

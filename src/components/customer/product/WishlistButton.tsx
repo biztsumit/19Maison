@@ -1,9 +1,10 @@
 import { Pressable, StyleSheet } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { useWishlistToggle } from '@/hooks/useWishlistToggle';
-import { CustomerColors } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { Icon } from '../ui/Icon';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemeColors, useThemedStyles } from '@/theme/theme-provider';
 
 interface Props {
   productId: string;
@@ -12,6 +13,8 @@ interface Props {
 }
 
 export function WishlistButton({ productId, size = 20, style }: Props) {
+  const styles = useThemedStyles(makeStyles);
+  const colors = useThemeColors();
   const { isWishlisted, isPending, toggle } = useWishlistToggle();
   const active = isWishlisted(productId);
   const pending = isPending(productId);
@@ -29,19 +32,20 @@ export function WishlistButton({ productId, size = 20, style }: Props) {
       <Icon
         name="heart"
         size={size}
-        color={active ? CustomerColors.accent : CustomerColors.text}
-        fill={active ? CustomerColors.accent : 'none'}
+        color={active ? colors.accent : colors.text}
+        fill={active ? colors.accent : 'none'}
       />
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
-  button: {
-    padding: Spacing[2],
-    backgroundColor: CustomerColors.bg,
-    borderWidth: 1,
-    borderColor: CustomerColors.border,
-  },
-  pending: { opacity: 0.5 },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    button: {
+      padding: Spacing[2],
+      backgroundColor: c.bg,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    pending: { opacity: 0.5 },
+  });

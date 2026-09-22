@@ -1,8 +1,8 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { CustomerColors } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { Icon } from './Icon';
 import { Text } from './Text';
+import { useThemeColors } from '@/theme/theme-provider';
 
 interface Props {
   value: number;
@@ -23,6 +23,7 @@ export function StarRating({
   showValue = false,
   reviewCount,
 }: Props) {
+  const colors = useThemeColors();
   return (
     <View style={styles.row}>
       <View style={styles.stars}>
@@ -30,20 +31,10 @@ export function StarRating({
           const fillFraction = Math.max(0, Math.min(1, value - i));
           const star = (
             <View style={{ width: size, height: size }}>
-              <Icon
-                name="star"
-                size={size}
-                color={CustomerColors.border}
-                fill={CustomerColors.border}
-              />
+              <Icon name="star" size={size} color={colors.border} fill={colors.border} />
               {fillFraction > 0 && (
                 <View style={[styles.fillClip, { width: size * fillFraction, height: size }]}>
-                  <Icon
-                    name="star"
-                    size={size}
-                    color={CustomerColors.accent}
-                    fill={CustomerColors.accent}
-                  />
+                  <Icon name="star" size={size} color={colors.accent} fill={colors.accent} />
                 </View>
               )}
             </View>

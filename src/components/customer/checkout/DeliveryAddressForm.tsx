@@ -1,10 +1,14 @@
-import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Controller, useForm } from 'react-hook-form';
 import { StyleSheet, View } from 'react-native';
 import { Spacing } from '@/theme/spacing';
 import type { Address, AddressRequest } from '@/types/user.types';
+import { toE164Phone, toNationalPhone } from '@/utils/phone';
+import { addressSchema } from '@/utils/validators';
+import type { AddressSchema } from '@/utils/validators';
+import { ControlledInput, ControlledPhoneInput } from '../form/ControlledInput';
 import { Button } from '../ui/Button';
 import { Checkbox } from '../ui/Checkbox';
-import { Input } from '../ui/Input';
 
 interface Props {
   initial?: Address;
@@ -13,9 +17,7 @@ interface Props {
   submitLabel?: string;
 }
 
-type FormState = Omit<AddressRequest, 'isDefault'> & { isDefault: boolean };
-
-const EMPTY: FormState = {
+const EMPTY: AddressSchema = {
   firstName: '',
   lastName: '',
   phone: '',
@@ -28,129 +30,117 @@ const EMPTY: FormState = {
   isDefault: false,
 };
 
-type Errors = Partial<Record<keyof FormState, string>>;
-
-function validate(form: FormState): Errors {
-  const errors: Errors = {};
-  if (form.firstName.trim().length < 2) errors.firstName = 'First name is required';
-  if (!form.lastName.trim()) errors.lastName = 'Last name is required';
-  if (!/^\+?\d{10,15}$/.test(form.phone.trim())) errors.phone = 'Enter a valid phone number';
-  if (form.address.trim().length < 5) errors.address = 'Address is required';
-  if (!form.city.trim()) errors.city = 'City is required';
-  if (!form.state.trim()) errors.state = 'State is required';
-  if (!/^\d{6}$/.test(form.pincode.trim())) errors.pincode = 'Enter a valid 6-digit pincode';
-  return errors;
-}
-
 export function DeliveryAddressForm({
   initial,
   onSubmit,
   isSubmitting = false,
   submitLabel = 'Save address',
 }: Props) {
-  const [form, setForm] = useState<FormState>(() =>
-    initial ? { ...EMPTY, ...initial, isDefault: initial.isDefault } : EMPTY,
-  );
-  const [errors, setErrors] = useState<Errors>({});
+  const { control, handleSubmit } = useForm<AddressSchema>({
+    resolver: zodResolver(addressSchema),
+    // Validate once a field has been visited, then live — so a shopper is corrected
+    // as they fix a field rather than only when they press Save.
+    mode: 'onTouched',
+    reValidateMode: 'onChange',
+    defaultValues: initial
+      ? {
+          ...EMPTY,
+          ...initial,
+          phone: toNationalPhone(initial.phone),
+          isDefault: initial.isDefault,
+        }
+      : EMPTY,
+  });
 
-  const setField = (key: keyof FormState) => (value: string) =>
-    setForm(prev => ({ ...prev, [key]: value }));
-
-  const handleSubmit = () => {
-    const found = validate(form);
-    setErrors(found);
-    if (Object.keys(found).length > 0) return;
-    onSubmit({ ...form, apartment: form.apartment?.trim() || undefined });
-  };
+  const submit = (data: AddressSchema) =>
+    onSubmit({
+      ...data,
+      // The API stores E.164; the form holds the national number.
+      phone: toE164Phone(data.phone),
+      apartment: data.apartment?.trim() || undefined,
+    });
 
   return (
     <View style={styles.form}>
       <View style={styles.row}>
-        <Input
+        <ControlledInput
+          control={control}
+          name="firstName"
           label="First name"
           required
-          value={form.firstName}
-          onChangeText={setField('firstName')}
-          error={errors.firstName}
+          autoComplete="given-name"
           containerStyle={styles.grow}
         />
-        <Input
+        <ControlledInput
+          control={control}
+          name="lastName"
           label="Last name"
           required
-          value={form.lastName}
-          onChangeText={setField('lastName')}
-          error={errors.lastName}
+          autoComplete="family-name"
           containerStyle={styles.grow}
         />
       </View>
 
-      <Input
+      <ControlledInput
+        control={control}
+        name="address"
         label="Address"
         required
-        value={form.address}
-        onChangeText={setField('address')}
-        error={errors.address}
+        autoComplete="street-address"
       />
 
-      <Input
-        label="Apartment, suite (optional)"
-        value={form.apartment ?? ''}
-        onChangeText={setField('apartment')}
-      />
+      <ControlledInput control={control} name="apartment" label="Apartment, suite (optional)" />
 
       <View style={styles.row}>
-        <Input
+        <ControlledInput
+          control={control}
+          name="city"
           label="City"
           required
-          value={form.city}
-          onChangeText={setField('city')}
-          error={errors.city}
           containerStyle={styles.grow}
         />
-        <Input
+        <ControlledInput
+          control={control}
+          name="state"
           label="State"
           required
-          value={form.state}
-          onChangeText={setField('state')}
-          error={errors.state}
           containerStyle={styles.grow}
         />
       </View>
 
       <View style={styles.row}>
-        <Input
+        <ControlledInput
+          control={control}
+          name="pincode"
           label="PIN code"
           required
-          value={form.pincode}
-          onChangeText={setField('pincode')}
-          error={errors.pincode}
           keyboardType="number-pad"
+          maxLength={6}
           containerStyle={styles.grow}
         />
-        <Input
+        <ControlledInput
+          control={control}
+          name="country"
           label="Country"
-          value={form.country}
-          onChangeText={setField('country')}
           containerStyle={styles.grow}
         />
       </View>
 
-      <Input
-        label="Phone"
-        required
-        value={form.phone}
-        onChangeText={setField('phone')}
-        error={errors.phone}
-        keyboardType="phone-pad"
+      <ControlledPhoneInput control={control} name="phone" label="Phone" required />
+
+      <Controller
+        control={control}
+        name="isDefault"
+        render={({ field: { onChange, value } }) => (
+          <Checkbox
+            checked={Boolean(value)}
+            onToggle={() => onChange(!value)}
+            label="Use as my default address"
+          />
+        )}
       />
 
-      <Checkbox
-        checked={form.isDefault}
-        onToggle={() => setForm(prev => ({ ...prev, isDefault: !prev.isDefault }))}
-        label="Use as my default address"
-      />
-
-      <Button label={submitLabel} onPress={handleSubmit} loading={isSubmitting} fullWidth />
+      <Button label={submitLabel} onPress={handleSubmit(submit)} loading={isSubmitting} fullWidth />
     </View>
   );
 }

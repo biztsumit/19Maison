@@ -1,7 +1,9 @@
 import { StyleSheet, View } from 'react-native';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemeColors } from '@/theme/theme-provider';
 
 export type SectionBackground = 'white' | 'offWhite' | 'dark' | 'gold';
 
@@ -14,12 +16,14 @@ interface Props {
   style?: StyleProp<ViewStyle>;
 }
 
-const BACKGROUNDS: Record<SectionBackground, string> = {
-  white: CustomerColors.bg,
-  offWhite: CustomerColors.bgAlt,
-  dark: CustomerColors.bgDark,
-  gold: CustomerColors.bgGold,
-};
+// 'dark' and 'gold' are brand contrast bands: they stay dark and gold in both
+// schemes. 'white' and 'offWhite' are the page surfaces and do follow the scheme.
+const backgroundFor = (c: CustomerPalette): Record<SectionBackground, string> => ({
+  white: c.bg,
+  offWhite: c.bgAlt,
+  dark: c.bgDark,
+  gold: c.bgGold,
+});
 
 export function Section({
   background = 'white',
@@ -29,10 +33,12 @@ export function Section({
   children,
   style,
 }: Props) {
+  const colors = useThemeColors();
+
   return (
     <View
       style={[
-        { backgroundColor: BACKGROUNDS[background], paddingVertical: paddingV, gap },
+        { backgroundColor: backgroundFor(colors)[background], paddingVertical: paddingV, gap },
         gutter && styles.gutter,
         style,
       ]}

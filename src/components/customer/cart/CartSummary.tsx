@@ -1,8 +1,10 @@
 import { StyleSheet, View } from 'react-native';
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { Divider } from '../ui/Divider';
 import { PriceRow } from '../ui/PriceRow';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemedStyles } from '@/theme/theme-provider';
 
 interface Props {
   subtotal: number;
@@ -21,6 +23,7 @@ export function CartSummary({
   total,
   itemCount,
 }: Props) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.wrap}>
       <PriceRow label={itemCount ? `Sub total (${itemCount})` : 'Sub total'} value={subtotal} />
@@ -37,11 +40,12 @@ export function CartSummary({
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: {
-    gap: Spacing[1],
-    paddingHorizontal: CustomerLayout.screenPaddingH,
-    paddingVertical: Spacing[5],
-    backgroundColor: CustomerColors.bg,
-  },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    wrap: {
+      gap: Spacing[1],
+      paddingHorizontal: CustomerLayout.screenPaddingH,
+      paddingVertical: Spacing[5],
+      backgroundColor: c.bg,
+    },
+  });

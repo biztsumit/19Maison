@@ -1,19 +1,23 @@
 import { StyleSheet, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Button, CustomerHeader, CustomerScreen, Icon, Text } from '@/components/customer';
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
 import { BorderRadius, Spacing } from '@/theme/spacing';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemeColors, useThemedStyles } from '@/theme/theme-provider';
 
 // Reached only when Razorpay reported success but verification failed, so the
 // money may already be captured. Deliberately offers no plain retry.
 export default function OrderFailureScreen() {
+  const styles = useThemedStyles(makeStyles);
+  const colors = useThemeColors();
   const { orderId } = useLocalSearchParams<{ orderId?: string }>();
 
   return (
     <CustomerScreen header={<CustomerHeader variant="title" title="Payment" />} scroll={false}>
       <View style={styles.wrap}>
         <View style={styles.iconRing}>
-          <Icon name="alert" size={30} color={CustomerColors.error} />
+          <Icon name="alert" size={30} color={colors.error} />
         </View>
 
         <Text variant="screenTitle" style={styles.center}>
@@ -51,22 +55,23 @@ export default function OrderFailureScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing[3],
-    paddingHorizontal: CustomerLayout.screenPaddingH,
-  },
-  center: { textAlign: 'center' },
-  iconRing: {
-    width: 72,
-    height: 72,
-    borderRadius: BorderRadius.full,
-    backgroundColor: CustomerColors.bgAlt,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  actions: { alignSelf: 'stretch', gap: Spacing[3], marginTop: Spacing[4] },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    wrap: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: Spacing[3],
+      paddingHorizontal: CustomerLayout.screenPaddingH,
+    },
+    center: { textAlign: 'center' },
+    iconRing: {
+      width: 72,
+      height: 72,
+      borderRadius: BorderRadius.full,
+      backgroundColor: c.bgAlt,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    actions: { alignSelf: 'stretch', gap: Spacing[3], marginTop: Spacing[4] },
+  });

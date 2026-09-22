@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import type { DimensionValue, StyleProp, ViewStyle } from 'react-native';
-import { CustomerColors } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemedStyles } from '@/theme/theme-provider';
 
 interface Props {
   width?: DimensionValue;
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export function Skeleton({ width = '100%', height = 16, radius = 0, style }: Props) {
+  const styles = useThemedStyles(makeStyles);
   const opacity = useRef(new Animated.Value(0.45)).current;
 
   useEffect(() => {
@@ -59,6 +61,7 @@ export function SkeletonText({
   );
 }
 
-const styles = StyleSheet.create({
-  block: { backgroundColor: CustomerColors.skeleton },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    block: { backgroundColor: c.skeleton },
+  });

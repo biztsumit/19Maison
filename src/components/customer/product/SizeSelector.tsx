@@ -1,7 +1,9 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { Text } from '../ui/Text';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemedStyles } from '@/theme/theme-provider';
 
 export interface SizeOption {
   id: string;
@@ -16,6 +18,7 @@ interface Props {
 }
 
 export function SizeSelector({ sizes, selectedId, onSelect }: Props) {
+  const styles = useThemedStyles(makeStyles);
   if (sizes.length === 0) return null;
   const selected = sizes.find(s => s.id === selectedId);
 
@@ -55,19 +58,20 @@ export function SizeSelector({ sizes, selectedId, onSelect }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: { gap: Spacing[3] },
-  row: { flexDirection: 'row', gap: Spacing[3] },
-  box: {
-    minWidth: CustomerLayout.swatchSize,
-    height: CustomerLayout.swatchSize,
-    paddingHorizontal: Spacing[2],
-    borderWidth: 2,
-    borderColor: CustomerColors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  selected: { borderColor: CustomerColors.accent },
-  unavailable: { opacity: 0.5 },
-  struck: { textDecorationLine: 'line-through' },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    wrap: { gap: Spacing[3] },
+    row: { flexDirection: 'row', gap: Spacing[3] },
+    box: {
+      minWidth: CustomerLayout.swatchSize,
+      height: CustomerLayout.swatchSize,
+      paddingHorizontal: Spacing[2],
+      borderWidth: 2,
+      borderColor: c.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    selected: { borderColor: c.accent },
+    unavailable: { opacity: 0.5 },
+    struck: { textDecorationLine: 'line-through' },
+  });

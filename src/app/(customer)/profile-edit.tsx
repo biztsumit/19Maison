@@ -23,6 +23,7 @@ import {
 import { CustomerLayout } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import type { Address, AddressRequest } from '@/types/user.types';
+import { formatPhone } from '@/utils/phone';
 
 export default function ProfileEditScreen() {
   const confirm = useConfirm();
@@ -84,7 +85,7 @@ export default function ProfileEditScreen() {
       <View style={styles.body}>
         {/* Read-only: there is no confirmed profile-update endpoint yet. */}
         <ProfileField label="Name" value={displayName ?? undefined} />
-        <ProfileField label="Phone number" value={user?.phone} />
+        <ProfileField label="Phone number" value={formatPhone(user?.phone)} />
 
         <Divider />
 

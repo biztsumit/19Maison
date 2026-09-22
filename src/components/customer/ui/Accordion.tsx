@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { LayoutAnimation, Platform, Pressable, StyleSheet, UIManager, View } from 'react-native';
 import type { ReactNode } from 'react';
-import { CustomerColors } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { Icon } from './Icon';
 import { Text } from './Text';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemeColors, useThemedStyles } from '@/theme/theme-provider';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -27,6 +28,8 @@ export function Accordion({
   onToggle,
   bordered = true,
 }: Props) {
+  const styles = useThemedStyles(makeStyles);
+  const colors = useThemeColors();
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
   const controlled = isOpen !== undefined;
   const open = controlled ? isOpen : internalOpen;
@@ -48,7 +51,7 @@ export function Accordion({
         <Text variant="cardTitle" style={styles.label}>
           {label}
         </Text>
-        <Icon name={open ? 'minus' : 'plus'} size={18} color={CustomerColors.text} />
+        <Icon name={open ? 'minus' : 'plus'} size={18} color={colors.text} />
       </Pressable>
       {open && <View style={styles.body}>{children}</View>}
     </View>
@@ -98,19 +101,20 @@ export function AccordionGroup({ items, singleOpen = true, defaultOpenKey }: Gro
   );
 }
 
-const styles = StyleSheet.create({
-  bordered: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: CustomerColors.border,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    minHeight: 58,
-    paddingVertical: Spacing[3],
-    gap: Spacing[3],
-  },
-  label: { flex: 1 },
-  body: { paddingBottom: Spacing[4] },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    bordered: {
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: c.border,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      minHeight: 58,
+      paddingVertical: Spacing[3],
+      gap: Spacing[3],
+    },
+    label: { flex: 1 },
+    body: { paddingBottom: Spacing[4] },
+  });

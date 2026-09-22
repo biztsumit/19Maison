@@ -1,9 +1,11 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { Badge } from '../ui/Badge';
 import { Icon } from '../ui/Icon';
 import { Text } from '../ui/Text';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemedStyles } from '@/theme/theme-provider';
 
 interface Props {
   onFilterPress: () => void;
@@ -20,6 +22,7 @@ export function CollectionToolbar({
   sortLabel = 'Sort',
   totalCount,
 }: Props) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.bar}>
       <Pressable
@@ -52,18 +55,19 @@ export function CollectionToolbar({
   );
 }
 
-const styles = StyleSheet.create({
-  bar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: Spacing[3],
-    paddingHorizontal: CustomerLayout.screenPaddingH,
-    paddingVertical: Spacing[3],
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderColor: CustomerColors.border,
-  },
-  action: { flexDirection: 'row', alignItems: 'center', gap: Spacing[2] },
-  pressed: { opacity: 0.6 },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    bar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: Spacing[3],
+      paddingHorizontal: CustomerLayout.screenPaddingH,
+      paddingVertical: Spacing[3],
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderColor: c.border,
+    },
+    action: { flexDirection: 'row', alignItems: 'center', gap: Spacing[2] },
+    pressed: { opacity: 0.6 },
+  });

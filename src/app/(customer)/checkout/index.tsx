@@ -22,13 +22,16 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
 import { isOnlinePaymentAvailable, useCheckout } from '@/hooks/useCheckout';
 import type { PaymentMethod } from '@/hooks/useCheckout';
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import type { AddressRequest } from '@/types/user.types';
+import { ORDER_NOTES_MAX, orderNotesSchema } from '@/utils/validators';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Toast from 'react-native-toast-message';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemedStyles } from '@/theme/theme-provider';
 
 // Cash on delivery goes through POST /payments/initiate with
 // method: 'CASH_ON_DELIVERY', which the backend team confirmed settles the order on
@@ -36,6 +39,7 @@ import Toast from 'react-native-toast-message';
 // mobile intentionally diverges from it.
 
 export default function CheckoutScreen() {
+  const styles = useThemedStyles(makeStyles);
   const { user, displayName } = useAuth();
   const { cart, items, total, fetchCart } = useCart();
   const { data: addresses = [], isLoading: addressesLoading } = useAddresses();
@@ -49,6 +53,11 @@ export default function CheckoutScreen() {
   );
 
   const [note, setNote] = useState('');
+
+  // Bounded because the courier API truncates anything longer, which would drop
+  // part of a gift message without telling anyone.
+  const noteCheck = orderNotesSchema.safeParse({ notes: note });
+  const noteError = noteCheck.success ? undefined : noteCheck.error.issues[0]?.message;
   const [addressSheet, setAddressSheet] = useState(false);
 
   useEffect(() => {
@@ -79,7 +88,7 @@ export default function CheckoutScreen() {
       addressId: selectedId as string,
       items,
       method,
-      notes: note,
+      notes: note.trim(),
       customerName: displayName ?? undefined,
       customerPhone: user?.phone,
       customerEmail: user?.email,
@@ -112,7 +121,7 @@ export default function CheckoutScreen() {
             label={checkout.payButtonLabel}
             onPress={handlePay}
             loading={checkout.isBusy}
-            disabled={!selectedId || checkout.isBusy}
+            disabled={!selectedId || checkout.isBusy || Boolean(noteError)}
             fullWidth
           />
         </StickyActionBar>
@@ -207,6 +216,8 @@ export default function CheckoutScreen() {
             value={note}
             onChangeText={setNote}
             placeholder="Delivery instructions or a gift message"
+            error={noteError}
+            maxLength={ORDER_NOTES_MAX}
             multiline
           />
         </Accordion>
@@ -240,22 +251,23 @@ export default function CheckoutScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  body: {
-    gap: Spacing[4],
-    paddingHorizontal: CustomerLayout.screenPaddingH,
-    paddingVertical: Spacing[5],
-  },
-  list: { gap: Spacing[3] },
-  method: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing[3],
-    padding: Spacing[4],
-    borderWidth: 1,
-    borderColor: CustomerColors.border,
-  },
-  methodDisabled: { opacity: 0.5 },
-  methodText: { flex: 1, gap: Spacing[0.5] },
-  sheetBody: { padding: CustomerLayout.screenPaddingH },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    body: {
+      gap: Spacing[4],
+      paddingHorizontal: CustomerLayout.screenPaddingH,
+      paddingVertical: Spacing[5],
+    },
+    list: { gap: Spacing[3] },
+    method: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing[3],
+      padding: Spacing[4],
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    methodDisabled: { opacity: 0.5 },
+    methodText: { flex: 1, gap: Spacing[0.5] },
+    sheetBody: { padding: CustomerLayout.screenPaddingH },
+  });

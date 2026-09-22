@@ -1,22 +1,24 @@
 import { Text } from '@/components/common/Text';
+import { AuthPasswordField, AuthPhoneField, AuthTextField } from '@/components/auth/AuthFields';
 import { useAuth } from '@/hooks/useAuth';
 import { registerThunk } from '@/store/slices/auth.slice';
 import { Colors } from '@/theme/colors';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemedStyles } from '@/theme/theme-provider';
 import { Font, FontSize } from '@/theme/typography';
+import { toE164Phone } from '@/utils/phone';
 import type { RegisterSchema } from '@/utils/validators';
 import { registerSchema } from '@/utils/validators';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -24,29 +26,29 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
 export default function RegisterScreen() {
+  const styles = useThemedStyles(makeStyles);
   const { register, isLoading } = useAuth();
   const insets = useSafeAreaInsets();
-  const [showPassword, setShowPassword] = useState(false);
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<RegisterSchema>({
+  const { control, handleSubmit } = useForm<RegisterSchema>({
     resolver: zodResolver(registerSchema),
+    // Sign up asks for five fields; correcting each one as it is left beats
+    // surfacing five errors at once when the CTA is finally pressed.
+    mode: 'onTouched',
+    reValidateMode: 'onChange',
     defaultValues: { firstName: '', lastName: '', phone: '', email: '', password: '' },
   });
 
   const onSubmit = async (data: RegisterSchema) => {
     const payload = {
-      firstName: data.firstName,
-      lastName: data.lastName,
-      phone: data.phone,
+      firstName: data.firstName.trim(),
+      lastName: data.lastName.trim(),
+      // The form holds the national number; the API expects E.164.
+      phone: toE164Phone(data.phone),
       password: data.password,
-      ...(data.email ? { email: data.email } : {}),
+      ...(data.email ? { email: data.email.trim() } : {}),
     };
     const result = await register(payload);
-    console.log('results>>>>>', result);
 
     if (registerThunk.rejected.match(result)) {
       Toast.show({ type: 'error', text1: 'Sign up failed', text2: result.error.message });
@@ -81,131 +83,41 @@ export default function RegisterScreen() {
             <Text style={styles.title}>Sign up</Text>
 
             <View style={styles.fields}>
-              {/* First Name */}
-              <Controller
+              <AuthTextField
                 control={control}
                 name="firstName"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <View>
-                    <View style={[styles.inputBox, !!errors.firstName && styles.inputError]}>
-                      <TextInput
-                        style={styles.input}
-                        placeholder="First name"
-                        placeholderTextColor={PLACEHOLDER}
-                        autoCapitalize="words"
-                        onChangeText={onChange}
-                        onBlur={onBlur}
-                        value={value}
-                      />
-                    </View>
-                    {errors.firstName && (
-                      <Text style={styles.fieldError}>{errors.firstName.message}</Text>
-                    )}
-                  </View>
-                )}
+                placeholder="First name"
+                autoCapitalize="words"
+                autoComplete="given-name"
+                textContentType="givenName"
               />
 
-              {/* Last Name */}
-              <Controller
+              <AuthTextField
                 control={control}
                 name="lastName"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <View>
-                    <View style={[styles.inputBox, !!errors.lastName && styles.inputError]}>
-                      <TextInput
-                        style={styles.input}
-                        placeholder="Last name"
-                        placeholderTextColor={PLACEHOLDER}
-                        autoCapitalize="words"
-                        onChangeText={onChange}
-                        onBlur={onBlur}
-                        value={value}
-                      />
-                    </View>
-                    {errors.lastName && (
-                      <Text style={styles.fieldError}>{errors.lastName.message}</Text>
-                    )}
-                  </View>
-                )}
+                placeholder="Last name"
+                autoCapitalize="words"
+                autoComplete="family-name"
+                textContentType="familyName"
               />
 
-              {/* Phone */}
-              <Controller
-                control={control}
-                name="phone"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <View>
-                    <View style={[styles.inputBox, !!errors.phone && styles.inputError]}>
-                      <TextInput
-                        style={styles.input}
-                        placeholder="+919876543210"
-                        placeholderTextColor={PLACEHOLDER}
-                        keyboardType="phone-pad"
-                        autoCapitalize="none"
-                        onChangeText={onChange}
-                        onBlur={onBlur}
-                        value={value}
-                      />
-                    </View>
-                    {errors.phone && <Text style={styles.fieldError}>{errors.phone.message}</Text>}
-                  </View>
-                )}
-              />
+              <AuthPhoneField control={control} name="phone" />
 
-              {/* Email (optional) */}
-              <Controller
+              <AuthTextField
                 control={control}
                 name="email"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <View>
-                    <View style={[styles.inputBox, !!errors.email && styles.inputError]}>
-                      <TextInput
-                        style={styles.input}
-                        placeholder="Email (optional)"
-                        placeholderTextColor={PLACEHOLDER}
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                        onChangeText={onChange}
-                        onBlur={onBlur}
-                        value={value}
-                      />
-                    </View>
-                    {errors.email && <Text style={styles.fieldError}>{errors.email.message}</Text>}
-                  </View>
-                )}
+                placeholder="Email (optional)"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+                textContentType="emailAddress"
               />
 
-              {/* Password */}
-              <Controller
+              <AuthPasswordField
                 control={control}
                 name="password"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <View>
-                    <View
-                      style={[
-                        styles.inputBox,
-                        styles.inputRow,
-                        !!errors.password && styles.inputError,
-                      ]}
-                    >
-                      <TextInput
-                        style={[styles.input, { flex: 1 }]}
-                        placeholder="Password"
-                        placeholderTextColor={PLACEHOLDER}
-                        secureTextEntry={!showPassword}
-                        onChangeText={onChange}
-                        onBlur={onBlur}
-                        value={value}
-                      />
-                      <TouchableOpacity onPress={() => setShowPassword(v => !v)} hitSlop={8}>
-                        <Text style={styles.eyeIcon}>{showPassword ? '🙈' : '👁'}</Text>
-                      </TouchableOpacity>
-                    </View>
-                    {errors.password && (
-                      <Text style={styles.fieldError}>{errors.password.message}</Text>
-                    )}
-                  </View>
-                )}
+                placeholder="Password"
+                textContentType="newPassword"
               />
             </View>
 
@@ -250,97 +162,71 @@ export default function RegisterScreen() {
   );
 }
 
-const PLACEHOLDER = '#626262';
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: c.authBg },
+    kav: { flex: 1 },
+    scroll: { flexGrow: 1, paddingBottom: 40 },
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000000' },
-  kav: { flex: 1 },
-  scroll: { flexGrow: 1, paddingBottom: 40 },
+    logoRow: { alignItems: 'center', paddingBottom: 8 },
+    logo: { width: 210, height: 44 },
 
-  logoRow: { alignItems: 'center', paddingBottom: 8 },
-  logo: { width: 210, height: 44 },
+    form: { paddingHorizontal: 24, paddingTop: 40, gap: 32 },
 
-  form: { paddingHorizontal: 24, paddingTop: 40, gap: 32 },
+    title: {
+      fontFamily: Font.medium,
+      fontSize: FontSize['2xl'],
+      lineHeight: FontSize['2xl'],
+      color: c.authText,
+    },
 
-  title: {
-    fontFamily: Font.medium,
-    fontSize: FontSize['2xl'],
-    lineHeight: FontSize['2xl'],
-    color: '#F9F9F9',
-  },
+    fields: { gap: 20 },
 
-  fields: { gap: 20 },
+    primaryBtn: {
+      backgroundColor: Colors.gold,
+      height: 56,
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    btnDisabled: { opacity: 0.5 },
+    primaryBtnText: {
+      fontFamily: Font.semibold,
+      fontSize: FontSize.md,
+      color: c.authText,
+      textTransform: 'uppercase',
+      letterSpacing: 1,
+    },
 
-  inputBox: {
-    height: 56,
-    backgroundColor: '#131313',
-    borderWidth: 1,
-    borderColor: 'rgba(98,98,98,0.87)',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    justifyContent: 'center',
-  },
-  inputRow: { flexDirection: 'row', alignItems: 'center' },
-  inputError: { borderColor: Colors.error },
-  input: {
-    fontFamily: Font.regular,
-    fontSize: FontSize.md,
-    color: '#F9F9F9',
-    paddingVertical: 0,
-  },
-  eyeIcon: { fontSize: 16, paddingHorizontal: 4 },
-  fieldError: {
-    fontFamily: Font.regular,
-    fontSize: FontSize.sm,
-    color: Colors.error,
-    marginTop: 4,
-  },
+    orRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+    orLine: { flex: 1, height: 1, backgroundColor: c.authBorder },
+    orText: { fontFamily: Font.medium, fontSize: FontSize.lg, color: c.authTextMuted },
 
-  primaryBtn: {
-    backgroundColor: Colors.gold,
-    height: 56,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  btnDisabled: { opacity: 0.5 },
-  primaryBtnText: {
-    fontFamily: Font.semibold,
-    fontSize: FontSize.md,
-    color: '#F9F9F9',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
+    googleBtn: {
+      height: 56,
+      backgroundColor: c.authSurface,
+      borderWidth: 1,
+      borderColor: c.authBorder,
+      borderRadius: 8,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 10,
+    },
+    googleLogo: { width: 20, height: 20 },
+    googleText: { fontFamily: Font.semibold, fontSize: FontSize.md, color: c.authText },
 
-  orRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  orLine: { flex: 1, height: 1, backgroundColor: 'rgba(98,98,98,0.87)' },
-  orText: { fontFamily: Font.medium, fontSize: FontSize.lg, color: '#626262' },
-
-  googleBtn: {
-    height: 56,
-    backgroundColor: '#131313',
-    borderWidth: 1,
-    borderColor: 'rgba(98,98,98,0.87)',
-    borderRadius: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-  },
-  googleLogo: { width: 20, height: 20 },
-  googleText: { fontFamily: Font.semibold, fontSize: FontSize.md, color: '#F9F9F9' },
-
-  bottomRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexWrap: 'wrap',
-  },
-  bottomBase: { fontFamily: Font.medium, fontSize: FontSize.lg, color: '#F9F9F9' },
-  bottomLink: {
-    fontFamily: Font.medium,
-    fontSize: FontSize.lg,
-    color: Colors.gold,
-    textDecorationLine: 'underline',
-  },
-});
+    bottomRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexWrap: 'wrap',
+    },
+    bottomBase: { fontFamily: Font.medium, fontSize: FontSize.lg, color: c.authText },
+    bottomLink: {
+      fontFamily: Font.medium,
+      fontSize: FontSize.lg,
+      color: Colors.gold,
+      textDecorationLine: 'underline',
+    },
+  });

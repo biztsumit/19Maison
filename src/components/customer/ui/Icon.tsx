@@ -30,7 +30,7 @@ import Trash from 'lucide-react-native/icons/trash';
 import Truck from 'lucide-react-native/icons/truck';
 import User from 'lucide-react-native/icons/user';
 import X from 'lucide-react-native/icons/x';
-import { CustomerColors } from '@/theme/customer';
+import { useThemeColors } from '@/theme/theme-provider';
 
 // Deep imports, not the package barrel: Metro does not reliably tree-shake and the
 // barrel pulls in the entire ~1500-icon set.
@@ -79,13 +79,8 @@ interface Props {
   fill?: string;
 }
 
-export function Icon({
-  name,
-  size = 20,
-  color = CustomerColors.text,
-  strokeWidth = 1.75,
-  fill = 'none',
-}: Props) {
+export function Icon({ name, size = 20, color, strokeWidth = 1.75, fill = 'none' }: Props) {
+  const colors = useThemeColors();
   const Glyph = ICONS[name];
-  return <Glyph size={size} color={color} strokeWidth={strokeWidth} fill={fill} />;
+  return <Glyph size={size} color={color ?? colors.text} strokeWidth={strokeWidth} fill={fill} />;
 }

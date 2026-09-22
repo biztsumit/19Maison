@@ -1,7 +1,8 @@
 import { StyleSheet, View } from 'react-native';
-import { CustomerColors } from '@/theme/customer';
 import { BorderRadius, Spacing } from '@/theme/spacing';
 import { Text } from './Text';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemeColors } from '@/theme/theme-provider';
 
 export type StatusTone = 'success' | 'warning' | 'error' | 'info' | 'neutral';
 
@@ -10,18 +11,20 @@ interface Props {
   tone?: StatusTone;
 }
 
-const DOT_COLOR: Record<StatusTone, string> = {
-  success: CustomerColors.success,
-  warning: CustomerColors.warning,
-  error: CustomerColors.error,
-  info: CustomerColors.info,
-  neutral: CustomerColors.textMuted,
-};
+const dotColor = (c: CustomerPalette): Record<StatusTone, string> => ({
+  success: c.success,
+  warning: c.warning,
+  error: c.error,
+  info: c.info,
+  neutral: c.textMuted,
+});
 
 export function StatusBadge({ label, tone = 'neutral' }: Props) {
+  const colors = useThemeColors();
+
   return (
     <View style={styles.row}>
-      <View style={[styles.dot, { backgroundColor: DOT_COLOR[tone] }]} />
+      <View style={[styles.dot, { backgroundColor: dotColor(colors)[tone] }]} />
       <Text variant="bodySmall">{label}</Text>
     </View>
   );

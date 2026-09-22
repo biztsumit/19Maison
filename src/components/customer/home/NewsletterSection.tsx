@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import { StyleSheet, View } from 'react-native';
 import { Spacing } from '@/theme/spacing';
+import { newsletterSchema } from '@/utils/validators';
+import type { NewsletterSchema } from '@/utils/validators';
+import { ControlledInput } from '../form/ControlledInput';
 import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
 import { Text } from '../ui/Text';
 import { Section } from '../layout/Section';
 
@@ -10,26 +13,22 @@ interface Props {
   onSubscribe: (email: string) => Promise<void>;
 }
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 export function NewsletterSection({ onSubscribe }: Props) {
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState<string | undefined>();
-  const [submitting, setSubmitting] = useState(false);
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+  } = useForm<NewsletterSchema>({
+    resolver: zodResolver(newsletterSchema),
+    mode: 'onTouched',
+    reValidateMode: 'onChange',
+    defaultValues: { email: '' },
+  });
 
-  const handleSubmit = async () => {
-    if (!EMAIL_RE.test(email.trim())) {
-      setError('Enter a valid email address');
-      return;
-    }
-    setError(undefined);
-    setSubmitting(true);
-    try {
-      await onSubscribe(email.trim());
-      setEmail('');
-    } finally {
-      setSubmitting(false);
-    }
+  const submit = async ({ email }: NewsletterSchema) => {
+    await onSubscribe(email.trim());
+    reset();
   };
 
   return (
@@ -42,16 +41,18 @@ export function NewsletterSection({ onSubscribe }: Props) {
 
       {/* Stacked rather than inline: an input beside a button is too cramped at phone width. */}
       <View style={styles.form}>
-        <Input
-          value={email}
-          onChangeText={setEmail}
+        <ControlledInput
+          control={control}
+          name="email"
           placeholder="Email address"
           keyboardType="email-address"
           autoCapitalize="none"
           autoComplete="email"
-          error={error}
+          textContentType="emailAddress"
+          returnKeyType="go"
+          onSubmitEditing={handleSubmit(submit)}
         />
-        <Button label="Subscribe" onPress={handleSubmit} loading={submitting} fullWidth />
+        <Button label="Subscribe" onPress={handleSubmit(submit)} loading={isSubmitting} fullWidth />
       </View>
     </Section>
   );

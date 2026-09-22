@@ -1,8 +1,10 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { Text } from '../ui/Text';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemeColors, useThemedStyles } from '@/theme/theme-provider';
 
 export interface ColorOption {
   id: string;
@@ -18,6 +20,8 @@ interface Props {
 }
 
 export function ColorSelector({ colors, selectedId, onSelect }: Props) {
+  const styles = useThemedStyles(makeStyles);
+  const palette = useThemeColors();
   if (colors.length === 0) return null;
   const selected = colors.find(c => c.id === selectedId);
 
@@ -44,9 +48,7 @@ export function ColorSelector({ colors, selectedId, onSelect }: Props) {
                     contentFit="cover"
                   />
                 ) : (
-                  <View
-                    style={[styles.fill, { backgroundColor: color.hex ?? CustomerColors.bgAlt }]}
-                  />
+                  <View style={[styles.fill, { backgroundColor: color.hex ?? palette.bgAlt }]} />
                 )}
               </Pressable>
             );
@@ -57,16 +59,17 @@ export function ColorSelector({ colors, selectedId, onSelect }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: { gap: Spacing[3] },
-  row: { flexDirection: 'row', gap: Spacing[3] },
-  swatch: {
-    width: CustomerLayout.swatchSize,
-    height: CustomerLayout.swatchSize,
-    borderWidth: 2,
-    borderColor: CustomerColors.border,
-    overflow: 'hidden',
-  },
-  selected: { borderColor: CustomerColors.accent },
-  fill: { width: '100%', height: '100%' },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    wrap: { gap: Spacing[3] },
+    row: { flexDirection: 'row', gap: Spacing[3] },
+    swatch: {
+      width: CustomerLayout.swatchSize,
+      height: CustomerLayout.swatchSize,
+      borderWidth: 2,
+      borderColor: c.border,
+      overflow: 'hidden',
+    },
+    selected: { borderColor: c.accent },
+    fill: { width: '100%', height: '100%' },
+  });

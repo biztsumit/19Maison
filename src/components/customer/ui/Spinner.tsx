@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { CustomerColors } from '@/theme/customer';
+import { useThemeColors } from '@/theme/theme-provider';
 
 export type SpinnerSize = 'sm' | 'md' | 'lg';
 
@@ -20,6 +20,7 @@ interface Props {
 // every screen. Driven natively, so it keeps spinning while JS is busy (which is
 // exactly when a spinner is on screen).
 export function Spinner({ size = 'md', color, trackColor, style }: Props) {
+  const colors = useThemeColors();
   const diameter = typeof size === 'number' ? size : SIZES[size];
   const spin = useRef(new Animated.Value(0)).current;
 
@@ -51,7 +52,7 @@ export function Spinner({ size = 'md', color, trackColor, style }: Props) {
             cx={diameter / 2}
             cy={diameter / 2}
             r={radius}
-            stroke={trackColor ?? CustomerColors.border}
+            stroke={trackColor ?? colors.border}
             strokeWidth={stroke}
             fill="none"
           />
@@ -61,7 +62,7 @@ export function Spinner({ size = 'md', color, trackColor, style }: Props) {
             cx={diameter / 2}
             cy={diameter / 2}
             r={radius}
-            stroke={color ?? CustomerColors.accent}
+            stroke={color ?? colors.accent}
             strokeWidth={stroke}
             strokeLinecap="round"
             strokeDasharray={`${circumference * 0.25} ${circumference}`}

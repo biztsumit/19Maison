@@ -1,8 +1,10 @@
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { Pressable, Modal as RNModal, ScrollView, StyleSheet, View } from 'react-native';
 import { Button } from './Button';
 import { Text } from './Text';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemedStyles } from '@/theme/theme-provider';
 
 export interface ConfirmOptions {
   title: string;
@@ -36,6 +38,7 @@ export function ConfirmDialog({
   variant = 'confirm',
   onResolve,
 }: Props) {
+  const styles = useThemedStyles(makeStyles);
   const isAlert = variant === 'alert';
   const primaryLabel = confirmLabel ?? (isAlert ? 'OK' : 'Confirm');
   const stacked =
@@ -116,45 +119,46 @@ export function ConfirmDialog({
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: CustomerColors.overlayMedium,
-    paddingHorizontal: CustomerLayout.screenPaddingH,
-  },
-  panel: {
-    width: '100%',
-    maxWidth: 400,
-    // Keeps the dialog well short of the screen edges on a long message.
-    maxHeight: '80%',
-    backgroundColor: CustomerColors.bg,
-  },
-  // flexGrow: 0 lets the panel hug short content and only scroll once it is tall.
-  bodyScroll: { flexGrow: 0 },
-  body: {
-    alignItems: 'center',
-    paddingHorizontal: CustomerLayout.screenPaddingH,
-    paddingTop: Spacing[7],
-    paddingBottom: Spacing[5],
-    gap: Spacing[2],
-  },
-  // Centred on every line, so a message that wraps stays balanced rather than
-  // ragging out to the right. Deliberately no lineHeight override: the bodyMuted
-  // preset already carries a relaxed 23.1, and the previous hardcoded 20 tightened
-  // it — the wrong direction for text that wraps.
-  centered: { textAlign: 'center' },
-  actions: {
-    flexDirection: 'row',
-    gap: Spacing[3],
-    paddingHorizontal: CustomerLayout.screenPaddingH,
-    paddingBottom: CustomerLayout.screenPaddingH,
-  },
-  actionsStacked: {
-    gap: Spacing[2],
-    paddingHorizontal: CustomerLayout.screenPaddingH,
-    paddingBottom: CustomerLayout.screenPaddingH,
-  },
-  action: { flex: 1 },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    root: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: c.overlayMedium,
+      paddingHorizontal: CustomerLayout.screenPaddingH,
+    },
+    panel: {
+      width: '100%',
+      maxWidth: 400,
+      // Keeps the dialog well short of the screen edges on a long message.
+      maxHeight: '80%',
+      backgroundColor: c.bgElevated,
+    },
+    // flexGrow: 0 lets the panel hug short content and only scroll once it is tall.
+    bodyScroll: { flexGrow: 0 },
+    body: {
+      alignItems: 'center',
+      paddingHorizontal: CustomerLayout.screenPaddingH,
+      paddingTop: Spacing[7],
+      paddingBottom: Spacing[5],
+      gap: Spacing[2],
+    },
+    // Centred on every line, so a message that wraps stays balanced rather than
+    // ragging out to the right. Deliberately no lineHeight override: the bodyMuted
+    // preset already carries a relaxed 23.1, and the previous hardcoded 20 tightened
+    // it — the wrong direction for text that wraps.
+    centered: { textAlign: 'center' },
+    actions: {
+      flexDirection: 'row',
+      gap: Spacing[3],
+      paddingHorizontal: CustomerLayout.screenPaddingH,
+      paddingBottom: CustomerLayout.screenPaddingH,
+    },
+    actionsStacked: {
+      gap: Spacing[2],
+      paddingHorizontal: CustomerLayout.screenPaddingH,
+      paddingBottom: CustomerLayout.screenPaddingH,
+    },
+    action: { flex: 1 },
+  });

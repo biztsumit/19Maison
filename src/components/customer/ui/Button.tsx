@@ -1,6 +1,8 @@
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
-import { CustomerColors, CustomerLayout, CustomerText } from '@/theme/customer';
+import { CustomerLayout, CustomerText } from '@/theme/customer';
+import type { CustomerPalette } from '@/theme/palette';
+import { useTheme, useThemedStyles } from '@/theme/theme-provider';
 import { Spacing } from '@/theme/spacing';
 import { FontSize } from '@/theme/typography';
 import { Text } from './Text';
@@ -24,14 +26,16 @@ interface Props {
   style?: StyleProp<ViewStyle>;
 }
 
-const LABEL_COLOR: Record<ButtonVariant, string> = {
-  solid: CustomerColors.textInverse,
-  outline: CustomerColors.text,
-  light: CustomerColors.text,
-  gold: CustomerColors.text,
-  link: CustomerColors.accent,
-  danger: CustomerColors.textInverse,
-};
+const labelColors = (c: CustomerPalette): Record<ButtonVariant, string> => ({
+  solid: c.onInverse,
+  outline: c.text,
+  light: c.text,
+  // The gold fill is the same colour in both schemes, so its label cannot follow
+  // the page's text colour or it would turn white-on-gold in dark mode.
+  gold: c.onAccent,
+  link: c.accent,
+  danger: c.textInverse,
+});
 
 export function Button({
   label,
@@ -46,8 +50,11 @@ export function Button({
   uppercase = true,
   style,
 }: Props) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+  const variantStyles = useThemedStyles(makeVariantStyles);
   const isDisabled = disabled || loading;
-  const labelColor = LABEL_COLOR[variant];
+  const labelColor = labelColors(colors)[variant];
 
   return (
     <Pressable
@@ -87,23 +94,25 @@ export function Button({
   );
 }
 
-const styles = StyleSheet.create({
-  base: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: CustomerLayout.cardRadius,
-  },
-  content: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing[2],
-  },
-  fullWidth: { alignSelf: 'stretch', width: '100%' },
-  pressed: { opacity: 0.75 },
-  disabled: { opacity: 0.4 },
-  noTransform: { textTransform: 'none' },
-  labelSm: { fontSize: FontSize.sm },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    base: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: CustomerLayout.cardRadius,
+      backgroundColor: c.transparent,
+    },
+    content: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing[2],
+    },
+    fullWidth: { alignSelf: 'stretch', width: '100%' },
+    pressed: { opacity: 0.75 },
+    disabled: { opacity: 0.4 },
+    noTransform: { textTransform: 'none' },
+    labelSm: { fontSize: FontSize.sm },
+  });
 
 const sizeStyles = StyleSheet.create({
   sm: { height: 38, paddingHorizontal: Spacing[4] },
@@ -111,21 +120,24 @@ const sizeStyles = StyleSheet.create({
   lg: { height: CustomerLayout.ctaHeight, paddingHorizontal: Spacing[6] },
 });
 
-const variantStyles = StyleSheet.create({
-  solid: { backgroundColor: CustomerColors.bgDark },
-  outline: {
-    backgroundColor: CustomerColors.transparent,
-    borderWidth: 1,
-    borderColor: CustomerColors.borderStrong,
-  },
-  light: { backgroundColor: CustomerColors.bg },
-  gold: { backgroundColor: CustomerColors.accent },
-  // Deletions and cancellations. The only place the palette's red is used as a
-  // fill rather than as text.
-  danger: { backgroundColor: CustomerColors.error },
-  link: {
-    backgroundColor: CustomerColors.transparent,
-    height: 'auto',
-    paddingHorizontal: 0,
-  },
-});
+const makeVariantStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    // The primary fill inverts with the scheme — black on a light page, near-white
+    // on a dark one — so the main CTA is always the highest-contrast element.
+    solid: { backgroundColor: c.inverseSurface },
+    outline: {
+      backgroundColor: c.transparent,
+      borderWidth: 1,
+      borderColor: c.borderStrong,
+    },
+    light: { backgroundColor: c.bg },
+    gold: { backgroundColor: c.accent },
+    // Deletions and cancellations. The only place the palette's red is used as a
+    // fill rather than as text.
+    danger: { backgroundColor: c.error },
+    link: {
+      backgroundColor: c.transparent,
+      height: 'auto',
+      paddingHorizontal: 0,
+    },
+  });

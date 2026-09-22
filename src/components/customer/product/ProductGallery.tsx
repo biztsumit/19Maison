@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Image } from 'expo-image';
 import type { ProductImage } from '@/types/product.types';
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { Icon } from '../ui/Icon';
 import { ImageCarousel } from '../ui/ImageCarousel';
 import { Thumbnail } from '../ui/Thumbnail';
 import { ImageLightbox } from './ImageLightbox';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemedStyles } from '@/theme/theme-provider';
 
 interface Props {
   images: ProductImage[];
@@ -17,6 +19,7 @@ interface Props {
 const THUMB = 64;
 
 export function ProductGallery({ images, overlay }: Props) {
+  const styles = useThemedStyles(makeStyles);
   const { width } = useWindowDimensions();
   const [index, setIndex] = useState(0);
   const [lightbox, setLightbox] = useState(false);
@@ -84,22 +87,23 @@ export function ProductGallery({ images, overlay }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  expand: {
-    position: 'absolute',
-    top: Spacing[3],
-    right: Spacing[3],
-    padding: Spacing[2],
-    backgroundColor: CustomerColors.bg,
-    borderWidth: 1,
-    borderColor: CustomerColors.border,
-  },
-  thumbs: {
-    gap: Spacing[2],
-    paddingHorizontal: CustomerLayout.screenPaddingH,
-    paddingTop: Spacing[3],
-  },
-  thumb: { borderWidth: 2, borderColor: CustomerColors.transparent },
-  thumbActive: { borderColor: CustomerColors.accent },
-  thumbImage: { width: THUMB, height: THUMB },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    expand: {
+      position: 'absolute',
+      top: Spacing[3],
+      right: Spacing[3],
+      padding: Spacing[2],
+      backgroundColor: c.bg,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    thumbs: {
+      gap: Spacing[2],
+      paddingHorizontal: CustomerLayout.screenPaddingH,
+      paddingTop: Spacing[3],
+    },
+    thumb: { borderWidth: 2, borderColor: c.transparent },
+    thumbActive: { borderColor: c.accent },
+    thumbImage: { width: THUMB, height: THUMB },
+  });

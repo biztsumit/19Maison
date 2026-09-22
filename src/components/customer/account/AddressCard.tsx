@@ -1,10 +1,11 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { CustomerColors } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { formatAddressLines } from '@/utils/formatters';
 import type { Address } from '@/types/user.types';
 import { Icon } from '../ui/Icon';
 import { Text } from '../ui/Text';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemeColors, useThemedStyles } from '@/theme/theme-provider';
 
 interface Props {
   address: Address;
@@ -14,6 +15,8 @@ interface Props {
 }
 
 export function AddressCard({ address, index, onEdit, onDelete }: Props) {
+  const styles = useThemedStyles(makeStyles);
+  const colors = useThemeColors();
   const label = address.isDefault ? 'Default address' : `Address ${(index ?? 0) + 1}`;
 
   return (
@@ -27,7 +30,7 @@ export function AddressCard({ address, index, onEdit, onDelete }: Props) {
               hitSlop={8}
               accessibilityLabel="Edit address"
             >
-              <Icon name="pencil" size={18} color={CustomerColors.textMuted} />
+              <Icon name="pencil" size={18} color={colors.textMuted} />
             </Pressable>
           )}
           {onDelete && (
@@ -36,7 +39,7 @@ export function AddressCard({ address, index, onEdit, onDelete }: Props) {
               hitSlop={8}
               accessibilityLabel="Delete address"
             >
-              <Icon name="trash" size={18} color={CustomerColors.textMuted} />
+              <Icon name="trash" size={18} color={colors.textMuted} />
             </Pressable>
           )}
         </View>
@@ -53,14 +56,15 @@ export function AddressCard({ address, index, onEdit, onDelete }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    gap: Spacing[3],
-    padding: Spacing[4],
-    borderWidth: 1,
-    borderColor: CustomerColors.border,
-    backgroundColor: CustomerColors.bg,
-  },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  actions: { flexDirection: 'row', gap: Spacing[4] },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    card: {
+      gap: Spacing[3],
+      padding: Spacing[4],
+      borderWidth: 1,
+      borderColor: c.border,
+      backgroundColor: c.bg,
+    },
+    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    actions: { flexDirection: 'row', gap: Spacing[4] },
+  });

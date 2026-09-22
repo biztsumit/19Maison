@@ -1,4 +1,4 @@
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import type { Product } from '@/types';
 import { formatPrice } from '@/utils/formatters';
@@ -8,6 +8,8 @@ import { StyleSheet, View } from 'react-native';
 import { BottomSheet } from '../ui/BottomSheet';
 import { Button } from '../ui/Button';
 import { Text } from '../ui/Text';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemedStyles } from '@/theme/theme-provider';
 
 interface Props {
   visible: boolean;
@@ -20,6 +22,7 @@ interface Props {
 // The native answer to the web's cart drawer: confirms the add without taking
 // the shopper off the product they were looking at.
 export function AddedToBagSheet({ visible, onClose, product, variantLabel, quantity }: Props) {
+  const styles = useThemedStyles(makeStyles);
   if (!product) return null;
   const image = product.images[0]?.url;
 
@@ -69,19 +72,20 @@ export function AddedToBagSheet({ visible, onClose, product, variantLabel, quant
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    gap: Spacing[3],
-    padding: CustomerLayout.screenPaddingH,
-  },
-  image: { width: 72, height: 96, backgroundColor: CustomerColors.bgAlt },
-  info: { flex: 1, gap: Spacing[1] },
-  actions: {
-    flexDirection: 'row',
-    gap: Spacing[3],
-    flex: 1,
-    marginBottom: Spacing[10],
-  },
-  action: { flex: 1 },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      gap: Spacing[3],
+      padding: CustomerLayout.screenPaddingH,
+    },
+    image: { width: 72, height: 96, backgroundColor: c.bgAlt },
+    info: { flex: 1, gap: Spacing[1] },
+    actions: {
+      flexDirection: 'row',
+      gap: Spacing[3],
+      flex: 1,
+      marginBottom: Spacing[10],
+    },
+    action: { flex: 1 },
+  });

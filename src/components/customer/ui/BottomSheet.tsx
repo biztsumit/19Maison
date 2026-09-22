@@ -10,10 +10,12 @@ import {
 } from 'react-native';
 import type { ReactNode } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
 import { BorderRadius, Spacing } from '@/theme/spacing';
 import { Icon } from './Icon';
 import { Text } from './Text';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemedStyles } from '@/theme/theme-provider';
 
 export type SheetSnap = 'content' | 'large' | 'full';
 
@@ -43,6 +45,7 @@ export function BottomSheet({
   footer,
   children,
 }: Props) {
+  const styles = useThemedStyles(makeStyles);
   const insets = useSafeAreaInsets();
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const backdrop = useRef(new Animated.Value(0)).current;
@@ -121,35 +124,36 @@ export function BottomSheet({
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, justifyContent: 'flex-end' },
-  backdrop: { ...StyleSheet.absoluteFill, backgroundColor: CustomerColors.overlayMedium },
-  sheet: {
-    backgroundColor: CustomerColors.bg,
-    borderTopLeftRadius: BorderRadius.xl,
-    borderTopRightRadius: BorderRadius.xl,
-    overflow: 'hidden',
-  },
-  grabArea: { paddingTop: Spacing[2.5] },
-  handle: {
-    alignSelf: 'center',
-    width: 40,
-    height: 4,
-    borderRadius: BorderRadius.full,
-    backgroundColor: CustomerColors.border,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: CustomerLayout.screenPaddingH,
-    paddingVertical: Spacing[4],
-  },
-  body: { flexShrink: 1 },
-  footer: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: CustomerColors.border,
-    paddingHorizontal: CustomerLayout.screenPaddingH,
-    paddingTop: Spacing[3],
-  },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    root: { flex: 1, justifyContent: 'flex-end' },
+    backdrop: { ...StyleSheet.absoluteFill, backgroundColor: c.overlayMedium },
+    sheet: {
+      backgroundColor: c.bgElevated,
+      borderTopLeftRadius: BorderRadius.xl,
+      borderTopRightRadius: BorderRadius.xl,
+      overflow: 'hidden',
+    },
+    grabArea: { paddingTop: Spacing[2.5] },
+    handle: {
+      alignSelf: 'center',
+      width: 40,
+      height: 4,
+      borderRadius: BorderRadius.full,
+      backgroundColor: c.border,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: CustomerLayout.screenPaddingH,
+      paddingVertical: Spacing[4],
+    },
+    body: { flexShrink: 1 },
+    footer: {
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: c.border,
+      paddingHorizontal: CustomerLayout.screenPaddingH,
+      paddingTop: Spacing[3],
+    },
+  });

@@ -1,13 +1,14 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import type { GenderSection } from '@/types/homepage.types';
-import { CustomerColors } from '@/theme/customer';
 import { BorderRadius, Spacing } from '@/theme/spacing';
 import { Font, FontSize } from '@/theme/typography';
 import { genderArtwork } from '@/utils/fallback-images';
 import { Text } from '../ui/Text';
 import { Thumbnail } from '../ui/Thumbnail';
 import { GENDER_LABEL } from './constants';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemedStyles } from '@/theme/theme-provider';
 
 interface Props {
   sections: GenderSection[];
@@ -18,6 +19,7 @@ interface Props {
 const TILE_HEIGHT = 121;
 
 export function ShopByGenderSection({ sections }: Props) {
+  const styles = useThemedStyles(makeStyles);
   // Only hide when there is no gender data at all. A missing imageUrl must not
   // suppress the whole section: the tile is still a working entry point, and
   // filtering on the image is why this section rendered as nothing.
@@ -58,32 +60,33 @@ export function ShopByGenderSection({ sections }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  section: {
-    backgroundColor: CustomerColors.bgAlt,
-    paddingVertical: Spacing[10],
-    paddingHorizontal: Spacing[4],
-    gap: Spacing[6],
-  },
-  heading: {
-    fontFamily: Font.semibold,
-    fontSize: FontSize['2xl'],
-    lineHeight: FontSize['2xl'] * 1.3,
-    color: CustomerColors.text,
-  },
-  row: { flexDirection: 'row', gap: Spacing[4] },
-  tile: { flex: 1, alignItems: 'center', gap: Spacing[2.5] },
-  pressed: { opacity: 0.8 },
-  image: {
-    width: '100%',
-    height: TILE_HEIGHT,
-    borderRadius: BorderRadius.full,
-    backgroundColor: CustomerColors.border,
-  },
-  label: {
-    fontFamily: Font.medium,
-    fontSize: FontSize.base,
-    lineHeight: FontSize.base,
-    color: CustomerColors.text,
-  },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    section: {
+      backgroundColor: c.bgAlt,
+      paddingVertical: Spacing[10],
+      paddingHorizontal: Spacing[4],
+      gap: Spacing[6],
+    },
+    heading: {
+      fontFamily: Font.semibold,
+      fontSize: FontSize['2xl'],
+      lineHeight: FontSize['2xl'] * 1.3,
+      color: c.text,
+    },
+    row: { flexDirection: 'row', gap: Spacing[4] },
+    tile: { flex: 1, alignItems: 'center', gap: Spacing[2.5] },
+    pressed: { opacity: 0.8 },
+    image: {
+      width: '100%',
+      height: TILE_HEIGHT,
+      borderRadius: BorderRadius.full,
+      backgroundColor: c.border,
+    },
+    label: {
+      fontFamily: Font.medium,
+      fontSize: FontSize.base,
+      lineHeight: FontSize.base,
+      color: c.text,
+    },
+  });

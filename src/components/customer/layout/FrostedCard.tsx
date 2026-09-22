@@ -2,8 +2,10 @@ import { StyleSheet, View } from 'react-native';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemedStyles } from '@/theme/theme-provider';
 
 interface Props {
   tone?: 'light' | 'dark';
@@ -15,6 +17,7 @@ interface Props {
 // The web's signature motif is a blurred caption chip over full-bleed imagery.
 // Real glass where the platform supports it, a translucent fill everywhere else.
 export function FrostedCard({ tone = 'light', align = 'left', children, style }: Props) {
+  const styles = useThemedStyles(makeStyles);
   const content = [styles.card, align === 'center' && styles.center, style];
 
   if (isLiquidGlassAvailable()) {
@@ -36,14 +39,15 @@ export function FrostedCard({ tone = 'light', align = 'left', children, style }:
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    padding: Spacing[5],
-    gap: Spacing[2],
-    borderRadius: CustomerLayout.cardRadius,
-    overflow: 'hidden',
-  },
-  center: { alignItems: 'center' },
-  fallbackLight: { backgroundColor: CustomerColors.frostedLight },
-  fallbackDark: { backgroundColor: CustomerColors.frostedDark },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    card: {
+      padding: Spacing[5],
+      gap: Spacing[2],
+      borderRadius: CustomerLayout.cardRadius,
+      overflow: 'hidden',
+    },
+    center: { alignItems: 'center' },
+    fallbackLight: { backgroundColor: c.frostedLight },
+    fallbackDark: { backgroundColor: c.frostedDark },
+  });

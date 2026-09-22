@@ -2,12 +2,14 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Thumbnail } from '../ui/Thumbnail';
 import { router } from 'expo-router';
 import type { CartItem } from '@/types';
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { formatPrice } from '@/utils/formatters';
 import { Icon } from '../ui/Icon';
 import { QuantityStepper } from '../ui/QuantityStepper';
 import { Text } from '../ui/Text';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemeColors, useThemedStyles } from '@/theme/theme-provider';
 
 interface Props {
   item: CartItem;
@@ -17,6 +19,8 @@ interface Props {
 }
 
 export function CartItemRow({ item, onQuantityChange, onRemove, disabled = false }: Props) {
+  const styles = useThemedStyles(makeStyles);
+  const colors = useThemeColors();
   const image = item.variant?.images?.[0]?.url ?? item.product?.images?.[0]?.url;
   const variantLabel = [item.variant?.frameColor, item.variant?.size].filter(Boolean).join(' / ');
 
@@ -50,7 +54,7 @@ export function CartItemRow({ item, onQuantityChange, onRemove, disabled = false
             accessibilityRole="button"
             accessibilityLabel="Remove from bag"
           >
-            <Icon name="trash" size={18} color={CustomerColors.textMuted} />
+            <Icon name="trash" size={18} color={colors.textMuted} />
           </Pressable>
         </View>
 
@@ -69,23 +73,24 @@ export function CartItemRow({ item, onQuantityChange, onRemove, disabled = false
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    gap: Spacing[4],
-    paddingHorizontal: CustomerLayout.screenPaddingH,
-    paddingVertical: Spacing[4],
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: CustomerColors.border,
-  },
-  image: { width: 72, height: 96, backgroundColor: CustomerColors.bgAlt },
-  info: { flex: 1, gap: Spacing[3] },
-  headerRow: { flexDirection: 'row', gap: Spacing[3] },
-  titles: { flex: 1, gap: Spacing[0.5] },
-  footerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: Spacing[3],
-  },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      gap: Spacing[4],
+      paddingHorizontal: CustomerLayout.screenPaddingH,
+      paddingVertical: Spacing[4],
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: c.border,
+    },
+    image: { width: 72, height: 96, backgroundColor: c.bgAlt },
+    info: { flex: 1, gap: Spacing[3] },
+    headerRow: { flexDirection: 'row', gap: Spacing[3] },
+    titles: { flex: 1, gap: Spacing[0.5] },
+    footerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: Spacing[3],
+    },
+  });

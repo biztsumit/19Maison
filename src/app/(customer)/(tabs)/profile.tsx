@@ -1,20 +1,28 @@
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useConfirm } from '@/providers/ConfirmProvider';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, CustomerScreen, Text } from '@/components/customer';
+import { AppearanceSheet, appearanceLabel } from '@/components/customer/account/AppearanceSheet';
 import { MenuRow } from '@/components/customer/account/MenuRow';
 import { useAuth } from '@/hooks/useAuth';
 import { useAppSelector } from '@/store';
 import { selectWishlistCount } from '@/store/selectors/wishlist.selectors';
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
+import type { CustomerPalette } from '@/theme/palette';
+import { useTheme, useThemedStyles } from '@/theme/theme-provider';
+import { formatPhone } from '@/utils/phone';
 
 export default function ProfileScreen() {
+  const styles = useThemedStyles(makeStyles);
   const confirm = useConfirm();
   const { user, displayName, logout } = useAuth();
   const wishlistCount = useAppSelector(selectWishlistCount);
   const insets = useSafeAreaInsets();
+  const { mode } = useTheme();
+  const [appearanceOpen, setAppearanceOpen] = useState(false);
 
   const confirmLogout = async () => {
     const ok = await confirm({
@@ -35,7 +43,7 @@ export default function ProfileScreen() {
         </Text>
         {Boolean(user?.phone) && (
           <Text variant="bodySmall" tone="inverseMuted">
-            {user?.phone}
+            {formatPhone(user?.phone)}
           </Text>
         )}
       </View>
@@ -66,27 +74,36 @@ export default function ProfileScreen() {
           subtitle="Get help and support"
           onPress={() => router.push('/(customer)/contact')}
         />
+        <MenuRow
+          icon="sliders"
+          label="Appearance"
+          subtitle={appearanceLabel(mode)}
+          onPress={() => setAppearanceOpen(true)}
+        />
       </View>
 
       <View style={styles.footer}>
         <Button label="Log out" variant="outline" onPress={confirmLogout} fullWidth />
       </View>
+
+      <AppearanceSheet visible={appearanceOpen} onClose={() => setAppearanceOpen(false)} />
     </CustomerScreen>
   );
 }
 
-const styles = StyleSheet.create({
-  hero: {
-    gap: Spacing[1],
-    backgroundColor: CustomerColors.bgDark,
-    paddingHorizontal: CustomerLayout.screenPaddingH,
-    paddingBottom: Spacing[8],
-  },
-  menu: {
-    backgroundColor: CustomerColors.bg,
-    marginTop: Spacing[5],
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: CustomerColors.border,
-  },
-  footer: { padding: CustomerLayout.screenPaddingH, marginTop: Spacing[6] },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    hero: {
+      gap: Spacing[1],
+      backgroundColor: c.bgDark,
+      paddingHorizontal: CustomerLayout.screenPaddingH,
+      paddingBottom: Spacing[8],
+    },
+    menu: {
+      backgroundColor: c.bg,
+      marginTop: Spacing[5],
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: c.border,
+    },
+    footer: { padding: CustomerLayout.screenPaddingH, marginTop: Spacing[6] },
+  });

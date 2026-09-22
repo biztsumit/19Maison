@@ -16,9 +16,11 @@ import type { NavFilterParams } from '@/api/services/navigation.service';
 import { useActiveBrands } from '@/hooks/useBrands';
 import { useResetOnTabPress } from '@/hooks/useResetOnTabPress';
 import { useNavigation } from '@/hooks/useNavigation';
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { brandImage, brandInitials } from '@/utils/brand-image';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemedStyles } from '@/theme/theme-provider';
 
 // Nav entries carry the filter values to apply, so they pass straight through as
 // route params. Explore seeds its filters from whatever keys arrive.
@@ -29,6 +31,7 @@ const goToFiltered = (params: NavFilterParams) =>
   });
 
 export default function CategoryScreen() {
+  const styles = useThemedStyles(makeStyles);
   // Accordion open/closed state lives inside the components, so re-entering the
   // tab remounts them rather than trying to reach in and collapse each one.
   const [resetKey, setResetKey] = useState(0);
@@ -137,14 +140,15 @@ export default function CategoryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  body: { paddingHorizontal: CustomerLayout.screenPaddingH },
-  categoryBody: { gap: Spacing[5] },
-  section: { gap: Spacing[3] },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing[2] },
-  rail: { flexDirection: 'row', gap: Spacing[3] },
-  railTile: { width: 116 },
-  railImage: { width: 116, height: 116, backgroundColor: CustomerColors.bgAlt },
-  tileLabel: { marginTop: Spacing[2], textAlign: 'center' },
-  pressed: { opacity: 0.8 },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    body: { paddingHorizontal: CustomerLayout.screenPaddingH },
+    categoryBody: { gap: Spacing[5] },
+    section: { gap: Spacing[3] },
+    chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing[2] },
+    rail: { flexDirection: 'row', gap: Spacing[3] },
+    railTile: { width: 116 },
+    railImage: { width: 116, height: 116, backgroundColor: c.bgAlt },
+    tileLabel: { marginTop: Spacing[2], textAlign: 'center' },
+    pressed: { opacity: 0.8 },
+  });

@@ -1,7 +1,8 @@
 import { StyleSheet, View } from 'react-native';
-import { CustomerColors } from '@/theme/customer';
 import { BorderRadius, Spacing } from '@/theme/spacing';
 import { Text } from './Text';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemedStyles } from '@/theme/theme-provider';
 
 export interface TimelineStep {
   key: string;
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export function Timeline({ steps }: Props) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View>
       {steps.map((step, i) => {
@@ -50,19 +52,20 @@ export function Timeline({ steps }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: Spacing[3] },
-  gutter: { alignItems: 'center', width: 16 },
-  dot: { width: 12, height: 12, borderRadius: BorderRadius.full, marginTop: Spacing[1] },
-  dotDone: { backgroundColor: CustomerColors.accent },
-  dotPending: {
-    backgroundColor: CustomerColors.bg,
-    borderWidth: 1,
-    borderColor: CustomerColors.border,
-  },
-  connector: { flex: 1, width: 2, marginVertical: Spacing[1] },
-  connectorDone: { backgroundColor: CustomerColors.bgDark },
-  connectorPending: { backgroundColor: CustomerColors.border },
-  content: { flex: 1, gap: Spacing[0.5], paddingBottom: Spacing[5] },
-  contentLast: { paddingBottom: 0 },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    row: { flexDirection: 'row', gap: Spacing[3] },
+    gutter: { alignItems: 'center', width: 16 },
+    dot: { width: 12, height: 12, borderRadius: BorderRadius.full, marginTop: Spacing[1] },
+    dotDone: { backgroundColor: c.accent },
+    dotPending: {
+      backgroundColor: c.bg,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    connector: { flex: 1, width: 2, marginVertical: Spacing[1] },
+    connectorDone: { backgroundColor: c.borderStrong },
+    connectorPending: { backgroundColor: c.border },
+    content: { flex: 1, gap: Spacing[0.5], paddingBottom: Spacing[5] },
+    contentLast: { paddingBottom: 0 },
+  });

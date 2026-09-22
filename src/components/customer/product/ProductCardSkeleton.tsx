@@ -1,7 +1,9 @@
 import { StyleSheet, View } from 'react-native';
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { Skeleton } from '../ui/Skeleton';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemedStyles } from '@/theme/theme-provider';
 
 interface Props {
   width: number;
@@ -10,6 +12,7 @@ interface Props {
 
 // Mirrors ProductCard's box model so the grid does not reflow on load.
 export function ProductCardSkeleton({ width, imageHeight }: Props) {
+  const styles = useThemedStyles(makeStyles);
   const height = imageHeight ?? Math.round(width * 0.85);
 
   return (
@@ -28,20 +31,21 @@ export function ProductCardSkeleton({ width, imageHeight }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    borderColor: CustomerColors.border,
-    borderRadius: CustomerLayout.cardRadius,
-    backgroundColor: CustomerColors.bg,
-    overflow: 'hidden',
-  },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing[3],
-    paddingTop: Spacing[3],
-  },
-  info: { paddingHorizontal: Spacing[3], paddingBottom: Spacing[3], gap: Spacing[2] },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    card: {
+      borderWidth: 1,
+      borderColor: c.border,
+      borderRadius: CustomerLayout.cardRadius,
+      backgroundColor: c.bg,
+      overflow: 'hidden',
+    },
+    topRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: Spacing[3],
+      paddingTop: Spacing[3],
+    },
+    info: { paddingHorizontal: Spacing[3], paddingBottom: Spacing[3], gap: Spacing[2] },
+  });

@@ -1,10 +1,10 @@
 import * as Clipboard from 'expo-clipboard';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
-import { CustomerColors } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { Icon } from './Icon';
 import { Text } from './Text';
+import { useThemeColors } from '@/theme/theme-provider';
 
 interface Props {
   value: string;
@@ -13,6 +13,7 @@ interface Props {
 }
 
 export function CopyButton({ value, label, size = 18 }: Props) {
+  const colors = useThemeColors();
   const [copied, setCopied] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -41,7 +42,7 @@ export function CopyButton({ value, label, size = 18 }: Props) {
       <Icon
         name={copied ? 'check' : 'copy'}
         size={size}
-        color={copied ? CustomerColors.success : CustomerColors.textMuted}
+        color={copied ? colors.success : colors.textMuted}
       />
       {label && <Text variant="bodySmallMuted">{copied ? 'Copied' : label}</Text>}
     </Pressable>

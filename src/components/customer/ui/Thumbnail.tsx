@@ -4,10 +4,11 @@ import type { ImageSourcePropType, ImageStyle, StyleProp, ViewStyle } from 'reac
 import { Image } from 'expo-image';
 import type { ImageContentFit } from 'expo-image';
 import { Colors } from '@/theme/colors';
-import { CustomerColors } from '@/theme/customer';
 import { Text } from 'react-native';
 import { Icon } from './Icon';
 import type { IconName } from './Icon';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemeColors, useThemedStyles } from '@/theme/theme-provider';
 
 interface Props {
   uri?: string | null;
@@ -40,6 +41,8 @@ export function Thumbnail({
   fallbackText,
   tone = 'light',
 }: Props) {
+  const styles = useThemedStyles(makeStyles);
+  const colors = useThemeColors();
   const source = uri ? { uri } : fallbackSource;
 
   if (source) {
@@ -70,24 +73,25 @@ export function Thumbnail({
         <Icon
           name={placeholder}
           size={iconSize}
-          color={tone === 'dark' ? CustomerColors.textInverseMuted : CustomerColors.textMuted}
+          color={tone === 'dark' ? colors.textInverseMuted : colors.textMuted}
         />
       )}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  placeholder: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: CustomerColors.bgAlt,
-  },
-  placeholderDark: { backgroundColor: Colors.surfaceElevated },
-  monogram: {
-    fontFamily: Font.semibold,
-    // Gold reads as deliberate branding rather than a failed image.
-    color: CustomerColors.accent,
-    letterSpacing: 1,
-  },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    placeholder: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: c.bgAlt,
+    },
+    placeholderDark: { backgroundColor: Colors.surfaceElevated },
+    monogram: {
+      fontFamily: Font.semibold,
+      // Gold reads as deliberate branding rather than a failed image.
+      color: c.accent,
+      letterSpacing: 1,
+    },
+  });

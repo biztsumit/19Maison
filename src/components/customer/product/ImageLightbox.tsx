@@ -8,10 +8,11 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CustomerColors } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { Icon } from '../ui/Icon';
 import { ImageCarousel } from '../ui/ImageCarousel';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemeColors, useThemedStyles } from '@/theme/theme-provider';
 
 interface Props {
   visible: boolean;
@@ -23,6 +24,8 @@ interface Props {
 // Swipe between images and swipe down to dismiss. The web shows prev/next arrows
 // and a thumbnail strip in here; both are redundant once swiping works.
 export function ImageLightbox({ visible, images, onClose }: Props) {
+  const styles = useThemedStyles(makeStyles);
+  const colors = useThemeColors();
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const translateY = useRef(new Animated.Value(0)).current;
@@ -64,14 +67,15 @@ export function ImageLightbox({ visible, images, onClose }: Props) {
           accessibilityLabel="Close"
           style={[styles.close, { top: insets.top + Spacing[3] }]}
         >
-          <Icon name="close" size={26} color={CustomerColors.textInverse} />
+          <Icon name="close" size={26} color={colors.textInverse} />
         </Pressable>
       </Animated.View>
     </Modal>
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: CustomerColors.bgDark, justifyContent: 'center' },
-  close: { position: 'absolute', right: Spacing[5] },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    root: { flex: 1, backgroundColor: c.bgDark, justifyContent: 'center' },
+    close: { position: 'absolute', right: Spacing[5] },
+  });

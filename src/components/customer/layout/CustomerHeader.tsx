@@ -5,12 +5,14 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppSelector } from '@/store';
 import { selectCartItemCount } from '@/store/selectors/cart.selectors';
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { Badge } from '../ui/Badge';
 import { Icon } from '../ui/Icon';
 import { SearchField } from '../ui/SearchField';
 import { Text } from '../ui/Text';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemeColors, useThemedStyles } from '@/theme/theme-provider';
 
 export type HeaderVariant = 'logo' | 'title' | 'back' | 'shop';
 
@@ -34,10 +36,12 @@ export function CustomerHeader({
   onBackPress,
   onSearchPress,
 }: Props) {
+  const styles = useThemedStyles(makeStyles);
+  const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const cartCount = useAppSelector(selectCartItemCount);
   const onDark = variant === 'logo';
-  const iconColor = onDark ? CustomerColors.textInverse : CustomerColors.text;
+  const iconColor = onDark ? colors.textInverse : colors.text;
 
   const handleBack = () => (onBackPress ? onBackPress() : router.back());
   const handleSearch = () =>
@@ -97,22 +101,23 @@ export function CustomerHeader({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: CustomerLayout.screenPaddingH,
-    paddingBottom: Spacing[4],
-    gap: Spacing[4],
-  },
-  dark: { backgroundColor: CustomerColors.bgDark },
-  light: {
-    backgroundColor: CustomerColors.bg,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: CustomerColors.border,
-  },
-  row: { flexDirection: 'row', alignItems: 'center', gap: Spacing[3], minHeight: 44 },
-  logoWrap: { flex: 1, alignItems: 'center' },
-  logo: { width: 180, height: 40 },
-  title: { flex: 1 },
-  cartWrap: { padding: Spacing[1] },
-  cartBadge: { position: 'absolute', top: -2, right: -4 },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    container: {
+      paddingHorizontal: CustomerLayout.screenPaddingH,
+      paddingBottom: Spacing[4],
+      gap: Spacing[4],
+    },
+    dark: { backgroundColor: c.bgDark },
+    light: {
+      backgroundColor: c.bg,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: c.border,
+    },
+    row: { flexDirection: 'row', alignItems: 'center', gap: Spacing[3], minHeight: 44 },
+    logoWrap: { flex: 1, alignItems: 'center' },
+    logo: { width: 180, height: 40 },
+    title: { flex: 1 },
+    cartWrap: { padding: Spacing[1] },
+    cartBadge: { position: 'absolute', top: -2, right: -4 },
+  });

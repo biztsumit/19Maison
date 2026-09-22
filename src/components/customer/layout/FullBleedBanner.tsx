@@ -3,8 +3,10 @@ import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { Thumbnail } from '../ui/Thumbnail';
 import { LinearGradient } from 'expo-linear-gradient';
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemeColors, useThemedStyles } from '@/theme/theme-provider';
 
 export type BannerOverlay = 'none' | 'light' | 'medium' | 'heavy' | 'gradient';
 
@@ -17,11 +19,13 @@ interface Props {
   style?: StyleProp<ViewStyle>;
 }
 
-const OVERLAY_COLOR: Record<Exclude<BannerOverlay, 'none' | 'gradient'>, string> = {
-  light: CustomerColors.overlayLight,
-  medium: CustomerColors.overlayMedium,
-  heavy: CustomerColors.overlayHeavy,
-};
+const overlayColor = (
+  c: CustomerPalette,
+): Record<Exclude<BannerOverlay, 'none' | 'gradient'>, string> => ({
+  light: c.overlayLight,
+  medium: c.overlayMedium,
+  heavy: c.overlayHeavy,
+});
 
 export function FullBleedBanner({
   imageUrl,
@@ -31,17 +35,21 @@ export function FullBleedBanner({
   children,
   style,
 }: Props) {
+  const styles = useThemedStyles(makeStyles);
+  const colors = useThemeColors();
   return (
     <View style={[{ height }, styles.wrap, style]}>
       <Thumbnail uri={imageUrl} style={StyleSheet.absoluteFill} placeholder="image" iconSize={40} />
 
       {overlay === 'gradient' ? (
         <LinearGradient
-          colors={[CustomerColors.transparent, CustomerColors.overlayHeavy]}
+          colors={[colors.transparent, colors.overlayHeavy]}
           style={StyleSheet.absoluteFill}
         />
       ) : overlay !== 'none' ? (
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: OVERLAY_COLOR[overlay] }]} />
+        <View
+          style={[StyleSheet.absoluteFill, { backgroundColor: overlayColor(colors)[overlay] }]}
+        />
       ) : null}
 
       {children && (
@@ -53,14 +61,15 @@ export function FullBleedBanner({
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: { width: '100%', overflow: 'hidden' },
-  placeholder: { backgroundColor: CustomerColors.bgAlt },
-  content: {
-    flex: 1,
-    paddingHorizontal: CustomerLayout.screenPaddingH,
-    paddingVertical: Spacing[6],
-  },
-  centered: { justifyContent: 'center', alignItems: 'center' },
-  bottom: { justifyContent: 'flex-end' },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    wrap: { width: '100%', overflow: 'hidden' },
+    placeholder: { backgroundColor: c.bgAlt },
+    content: {
+      flex: 1,
+      paddingHorizontal: CustomerLayout.screenPaddingH,
+      paddingVertical: Spacing[6],
+    },
+    centered: { justifyContent: 'center', alignItems: 'center' },
+    bottom: { justifyContent: 'flex-end' },
+  });

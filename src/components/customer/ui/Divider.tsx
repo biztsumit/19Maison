@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
-import { CustomerColors } from '@/theme/customer';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemedStyles } from '@/theme/theme-provider';
 
 interface Props {
   vertical?: boolean;
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export function Divider({ vertical = false, inset = 0, style }: Props) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View
       style={[
@@ -20,7 +22,8 @@ export function Divider({ vertical = false, inset = 0, style }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  horizontal: { height: StyleSheet.hairlineWidth, backgroundColor: CustomerColors.border },
-  vertical: { width: StyleSheet.hairlineWidth, backgroundColor: CustomerColors.border },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    horizontal: { height: StyleSheet.hairlineWidth, backgroundColor: c.border },
+    vertical: { width: StyleSheet.hairlineWidth, backgroundColor: c.border },
+  });

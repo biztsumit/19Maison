@@ -14,11 +14,15 @@ import {
 } from '@/components/customer';
 import { OrderLineItem, orderItemToLine } from '@/components/customer/checkout/OrderLineItem';
 import { useOrder } from '@/hooks/useOrders';
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
 import { BorderRadius, Spacing } from '@/theme/spacing';
 import { formatOrderNumber } from '@/utils/formatters';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemeColors, useThemedStyles } from '@/theme/theme-provider';
 
 export default function OrderSuccessScreen() {
+  const styles = useThemedStyles(makeStyles);
+  const colors = useThemeColors();
   const { orderId, method } = useLocalSearchParams<{ orderId: string; method?: string }>();
   // Params carry only what the create call returned, which is empty when a
   // reserved order is resumed. The order itself is the source of truth.
@@ -36,7 +40,7 @@ export default function OrderSuccessScreen() {
     <CustomerScreen contentContainerStyle={styles.content}>
       <View style={styles.hero}>
         <Animated.View style={[styles.check, { transform: [{ scale }] }]}>
-          <Icon name="check" size={34} color={CustomerColors.accent} strokeWidth={3} />
+          <Icon name="check" size={34} color={colors.accent} strokeWidth={3} />
         </Animated.View>
 
         <Text variant="screenTitle" style={styles.center}>
@@ -103,30 +107,31 @@ export default function OrderSuccessScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  content: { padding: CustomerLayout.screenPaddingH, gap: Spacing[6] },
-  hero: { alignItems: 'center', gap: Spacing[3], paddingTop: Spacing[10] },
-  check: {
-    width: 84,
-    height: 84,
-    borderRadius: BorderRadius.full,
-    backgroundColor: CustomerColors.bgDark,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  center: { textAlign: 'center' },
-  card: {
-    gap: Spacing[4],
-    padding: Spacing[4],
-    borderWidth: 1,
-    borderColor: CustomerColors.border,
-  },
-  cardHead: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: Spacing[3],
-  },
-  list: { gap: Spacing[4] },
-  actions: { gap: Spacing[3] },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    content: { padding: CustomerLayout.screenPaddingH, gap: Spacing[6] },
+    hero: { alignItems: 'center', gap: Spacing[3], paddingTop: Spacing[10] },
+    check: {
+      width: 84,
+      height: 84,
+      borderRadius: BorderRadius.full,
+      backgroundColor: c.bgDark,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    center: { textAlign: 'center' },
+    card: {
+      gap: Spacing[4],
+      padding: Spacing[4],
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    cardHead: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: Spacing[3],
+    },
+    list: { gap: Spacing[4] },
+    actions: { gap: Spacing[3] },
+  });

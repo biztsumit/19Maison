@@ -1,10 +1,11 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { CustomerColors } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { formatAddressLines } from '@/utils/formatters';
 import type { Address } from '@/types/user.types';
 import { SelectionBox } from '../ui/SelectionBox';
 import { Text } from '../ui/Text';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemedStyles } from '@/theme/theme-provider';
 
 interface Props {
   address: Address;
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export function AddressOption({ address, index, selected, onSelect, disabled }: Props) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <Pressable
       onPress={() => onSelect(address.id)}
@@ -38,17 +40,18 @@ export function AddressOption({ address, index, selected, onSelect, disabled }: 
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: Spacing[3],
-    padding: Spacing[4],
-    borderWidth: 1,
-    borderColor: CustomerColors.border,
-    backgroundColor: CustomerColors.bg,
-  },
-  selected: { borderColor: CustomerColors.borderStrong },
-  disabled: { opacity: 0.5 },
-  body: { flex: 1, gap: Spacing[0.5] },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    card: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: Spacing[3],
+      padding: Spacing[4],
+      borderWidth: 1,
+      borderColor: c.border,
+      backgroundColor: c.bg,
+    },
+    selected: { borderColor: c.borderStrong },
+    disabled: { opacity: 0.5 },
+    body: { flex: 1, gap: Spacing[0.5] },
+  });

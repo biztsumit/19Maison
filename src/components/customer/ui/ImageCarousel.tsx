@@ -4,9 +4,10 @@ import type { NativeScrollEvent, NativeSyntheticEvent, StyleProp, ViewStyle } fr
 import { Image } from 'expo-image';
 import type { ImageContentFit } from 'expo-image';
 import type { ReactNode } from 'react';
-import { CustomerColors } from '@/theme/customer';
 import { BorderRadius, Spacing } from '@/theme/spacing';
 import { Text } from './Text';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemedStyles } from '@/theme/theme-provider';
 
 interface Props {
   images: string[];
@@ -34,6 +35,7 @@ export function ImageCarousel({
   renderOverlay,
   style,
 }: Props) {
+  const styles = useThemedStyles(makeStyles);
   const [index, setIndex] = useState(0);
   const listRef = useRef<FlatList<string>>(null);
 
@@ -99,28 +101,29 @@ export function ImageCarousel({
   );
 }
 
-const styles = StyleSheet.create({
-  counter: {
-    position: 'absolute',
-    bottom: Spacing[3],
-    alignSelf: 'center',
-    paddingHorizontal: Spacing[2.5],
-    paddingVertical: Spacing[1],
-    borderRadius: BorderRadius.full,
-    backgroundColor: CustomerColors.overlayMedium,
-  },
-  dots: {
-    position: 'absolute',
-    bottom: Spacing[4],
-    alignSelf: 'center',
-    flexDirection: 'row',
-    gap: Spacing[1.5],
-  },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: BorderRadius.full,
-    backgroundColor: CustomerColors.frostedLight,
-  },
-  dotActive: { backgroundColor: CustomerColors.accent, width: 18 },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    counter: {
+      position: 'absolute',
+      bottom: Spacing[3],
+      alignSelf: 'center',
+      paddingHorizontal: Spacing[2.5],
+      paddingVertical: Spacing[1],
+      borderRadius: BorderRadius.full,
+      backgroundColor: c.overlayMedium,
+    },
+    dots: {
+      position: 'absolute',
+      bottom: Spacing[4],
+      alignSelf: 'center',
+      flexDirection: 'row',
+      gap: Spacing[1.5],
+    },
+    dot: {
+      width: 6,
+      height: 6,
+      borderRadius: BorderRadius.full,
+      backgroundColor: c.frostedLight,
+    },
+    dotActive: { backgroundColor: c.accent, width: 18 },
+  });

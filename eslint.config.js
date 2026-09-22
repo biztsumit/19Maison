@@ -67,13 +67,26 @@ module.exports = [
     },
   },
   {
-    // The customer flow is a light theme built on src/theme/customer.ts.
-    // Colour literals are how the screens drifted from the tokens in the first place.
+    // These style themselves through `useThemedStyles(makeStyles)`, so the stylesheet
+    // lives inside a factory the rule cannot trace back to its consumer.
+    files: [
+      'src/app/index.tsx',
+      'src/app/(auth)/**/*.{ts,tsx}',
+      'src/components/auth/**/*.{ts,tsx}',
+    ],
+    rules: {
+      'react-native/no-unused-styles': 'off',
+    },
+  },
+  {
+    // The customer flow reads its colours from the runtime theme (src/theme/palette.ts)
+    // via useThemeColors/useThemedStyles. Colour literals are how the screens drifted
+    // from the tokens in the first place, and now they would also skip dark mode.
     files: ['src/app/(customer)/**/*.{ts,tsx}', 'src/components/customer/**/*.{ts,tsx}'],
     rules: {
       'react-native/no-color-literals': 'error',
-      // This library is built on variant maps (styles[variant]), which the rule
-      // cannot resolve statically.
+      // This library is built on variant maps (styles[variant]) and on themed style
+      // factories, neither of which the rule can resolve statically.
       'react-native/no-unused-styles': 'off',
       'no-restricted-imports': [
         'error',

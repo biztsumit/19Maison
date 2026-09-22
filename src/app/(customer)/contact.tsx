@@ -1,8 +1,10 @@
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import { CustomerHeader, CustomerScreen, Divider, Icon, Text } from '@/components/customer';
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import type { IconName } from '@/components/customer';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemeColors, useThemedStyles } from '@/theme/theme-provider';
 
 const PHONE = '+919876543210';
 const EMAIL = 'care@19maison.com';
@@ -29,6 +31,8 @@ const ROWS: Row[] = [
 ];
 
 export default function ContactScreen() {
+  const styles = useThemedStyles(makeStyles);
+  const colors = useThemeColors();
   const open = async (url: string) => {
     const supported = await Linking.canOpenURL(url);
     if (supported) Linking.openURL(url);
@@ -52,13 +56,13 @@ export default function ContactScreen() {
               style={({ pressed }) => [styles.row, pressed && styles.pressed]}
             >
               <View style={styles.iconBox}>
-                <Icon name={row.icon} size={20} color={CustomerColors.textInverse} />
+                <Icon name={row.icon} size={20} color={colors.onInverse} />
               </View>
               <View style={styles.rowText}>
                 <Text variant="cardTitle">{row.label}</Text>
                 <Text variant="bodySmallMuted">{row.value}</Text>
               </View>
-              <Icon name="chevron-right" size={18} color={CustomerColors.textMuted} />
+              <Icon name="chevron-right" size={18} color={colors.textMuted} />
             </Pressable>
           ))}
         </View>
@@ -75,41 +79,42 @@ export default function ContactScreen() {
           style={({ pressed }) => [styles.row, pressed && styles.pressed]}
         >
           <View style={styles.iconBox}>
-            <Icon name="map-pin" size={20} color={CustomerColors.textInverse} />
+            <Icon name="map-pin" size={20} color={colors.onInverse} />
           </View>
           <View style={styles.rowText}>
             <Text variant="cardTitle">Get directions</Text>
             <Text variant="bodySmallMuted">Open in maps</Text>
           </View>
-          <Icon name="chevron-right" size={18} color={CustomerColors.textMuted} />
+          <Icon name="chevron-right" size={18} color={colors.textMuted} />
         </Pressable>
       </View>
     </CustomerScreen>
   );
 }
 
-const styles = StyleSheet.create({
-  body: {
-    gap: Spacing[4],
-    paddingHorizontal: CustomerLayout.screenPaddingH,
-    paddingVertical: Spacing[5],
-  },
-  rows: { gap: Spacing[3] },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing[4],
-    padding: Spacing[4],
-    borderWidth: 1,
-    borderColor: CustomerColors.border,
-  },
-  pressed: { opacity: 0.7 },
-  iconBox: {
-    width: 40,
-    height: 40,
-    backgroundColor: CustomerColors.bgDark,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  rowText: { flex: 1, gap: Spacing[0.5] },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    body: {
+      gap: Spacing[4],
+      paddingHorizontal: CustomerLayout.screenPaddingH,
+      paddingVertical: Spacing[5],
+    },
+    rows: { gap: Spacing[3] },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing[4],
+      padding: Spacing[4],
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    pressed: { opacity: 0.7 },
+    iconBox: {
+      width: 40,
+      height: 40,
+      backgroundColor: c.inverseSurface,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    rowText: { flex: 1, gap: Spacing[0.5] },
+  });

@@ -1,10 +1,12 @@
 import { Modal as RNModal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import type { ReactNode } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { Icon } from './Icon';
 import { Text } from './Text';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemedStyles } from '@/theme/theme-provider';
 
 interface Props {
   visible: boolean;
@@ -16,6 +18,7 @@ interface Props {
 }
 
 export function Modal({ visible, onClose, title, variant = 'center', footer, children }: Props) {
+  const styles = useThemedStyles(makeStyles);
   const insets = useSafeAreaInsets();
   const fullscreen = variant === 'fullscreen';
 
@@ -62,37 +65,38 @@ export function Modal({ visible, onClose, title, variant = 'center', footer, chi
   );
 }
 
-const styles = StyleSheet.create({
-  centerRoot: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: CustomerColors.overlayMedium,
-    paddingHorizontal: CustomerLayout.screenPaddingH,
-  },
-  fullRoot: { flex: 1, backgroundColor: CustomerColors.bg },
-  centerPanel: {
-    width: '100%',
-    maxHeight: '80%',
-    backgroundColor: CustomerColors.bg,
-  },
-  fullPanel: { flex: 1, backgroundColor: CustomerColors.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: CustomerLayout.screenPaddingH,
-    paddingVertical: Spacing[4],
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: CustomerColors.border,
-  },
-  body: { flexGrow: 0 },
-  bodyContent: { padding: CustomerLayout.screenPaddingH },
-  footer: {
-    flexDirection: 'row',
-    gap: Spacing[3],
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: CustomerColors.border,
-    padding: CustomerLayout.screenPaddingH,
-  },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    centerRoot: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: c.overlayMedium,
+      paddingHorizontal: CustomerLayout.screenPaddingH,
+    },
+    fullRoot: { flex: 1, backgroundColor: c.bg },
+    centerPanel: {
+      width: '100%',
+      maxHeight: '80%',
+      backgroundColor: c.bgElevated,
+    },
+    fullPanel: { flex: 1, backgroundColor: c.bg },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: CustomerLayout.screenPaddingH,
+      paddingVertical: Spacing[4],
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: c.border,
+    },
+    body: { flexGrow: 0 },
+    bodyContent: { padding: CustomerLayout.screenPaddingH },
+    footer: {
+      flexDirection: 'row',
+      gap: Spacing[3],
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: c.border,
+      padding: CustomerLayout.screenPaddingH,
+    },
+  });

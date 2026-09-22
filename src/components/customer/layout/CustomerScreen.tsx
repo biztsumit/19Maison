@@ -4,8 +4,8 @@ import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useResetOnTabPress } from '@/hooks/useResetOnTabPress';
-import { CustomerColors } from '@/theme/customer';
 import { useTabBarInset } from './TabBar';
+import { useTheme } from '@/theme/theme-provider';
 
 interface Props {
   header?: ReactNode;
@@ -31,8 +31,9 @@ export function CustomerScreen({
   contentContainerStyle,
   children,
 }: Props) {
+  const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
-  const bg = background === 'white' ? CustomerColors.bg : CustomerColors.bgAlt;
+  const bg = background === 'white' ? colors.bg : colors.bgAlt;
 
   // Non-zero only inside the customer tabs, whose bar floats over the page. It
   // already covers the bottom safe area, so the two must not both be applied.
@@ -62,11 +63,7 @@ export function CustomerScreen({
       keyboardShouldPersistTaps="handled"
       refreshControl={
         onRefresh ? (
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={CustomerColors.accent}
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />
         ) : undefined
       }
     >
@@ -85,7 +82,7 @@ export function CustomerScreen({
         edges?.bottom !== false && !footer && { paddingBottom: bottomSafe },
       ]}
     >
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       {header}
       {body}
       {/* A sticky footer sits above the tab bar, not behind its blur. */}

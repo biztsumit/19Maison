@@ -1,12 +1,13 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Thumbnail } from '../ui/Thumbnail';
 import type { Order } from '@/types/order.types';
-import { CustomerColors } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { orderStatusLabel, orderStatusTone } from '@/utils/order-status';
 import { formatDate, formatOrderNumber, formatPrice } from '@/utils/formatters';
 import { StatusBadge } from '../ui/StatusBadge';
 import { Text } from '../ui/Text';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemedStyles } from '@/theme/theme-provider';
 
 interface Props {
   order: Order;
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export function OrderCard({ order, onPress, footer }: Props) {
+  const styles = useThemedStyles(makeStyles);
   const first = order.items?.[0];
   if (!first) return null;
 
@@ -57,14 +59,15 @@ export function OrderCard({ order, onPress, footer }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    borderColor: CustomerColors.border,
-    backgroundColor: CustomerColors.bg,
-  },
-  main: { flexDirection: 'row', gap: Spacing[4], padding: Spacing[4] },
-  pressed: { opacity: 0.9 },
-  image: { width: 72, height: 96, backgroundColor: CustomerColors.bgAlt },
-  info: { flex: 1, gap: Spacing[1] },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    card: {
+      borderWidth: 1,
+      borderColor: c.border,
+      backgroundColor: c.bg,
+    },
+    main: { flexDirection: 'row', gap: Spacing[4], padding: Spacing[4] },
+    pressed: { opacity: 0.9 },
+    image: { width: 72, height: 96, backgroundColor: c.bgAlt },
+    info: { flex: 1, gap: Spacing[1] },
+  });

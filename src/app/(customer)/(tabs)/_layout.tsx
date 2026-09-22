@@ -7,9 +7,10 @@ import {
 } from '@/components/customer/layout/TabBar';
 import { useAppSelector } from '@/store';
 import { selectCartItemCount } from '@/store/selectors/cart.selectors';
-import { CustomerColors } from '@/theme/customer';
+import { useThemeColors } from '@/theme/theme-provider';
 
 export default function CustomerTabsLayout() {
+  const colors = useThemeColors();
   const cartCount = useAppSelector(selectCartItemCount);
   const { bar, inset } = useTabBarStyle();
 
@@ -26,8 +27,8 @@ export default function CustomerTabsLayout() {
           tabBarStyle: bar,
           tabBarBackground: TabBarBackground,
           tabBarShowLabel: false,
-          tabBarActiveTintColor: CustomerColors.accent,
-          tabBarInactiveTintColor: CustomerColors.text,
+          tabBarActiveTintColor: colors.accent,
+          tabBarInactiveTintColor: colors.text,
         }}
       >
         <Tabs.Screen

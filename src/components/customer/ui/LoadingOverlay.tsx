@@ -1,8 +1,9 @@
 import { Modal, StyleSheet, View } from 'react-native';
-import { CustomerColors } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { Spinner } from './Spinner';
 import { Text } from './Text';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemedStyles } from '@/theme/theme-provider';
 
 interface Props {
   visible: boolean;
@@ -17,6 +18,7 @@ interface Props {
 // It is a Modal so it covers navigation chrome too, and it swallows the Android
 // back button (onRequestClose is a no-op) so the action cannot be abandoned midway.
 export function LoadingOverlay({ visible, message }: Props) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={() => {}}>
       <View style={styles.root}>
@@ -33,19 +35,20 @@ export function LoadingOverlay({ visible, message }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: CustomerColors.overlayMedium,
-  },
-  card: {
-    alignItems: 'center',
-    gap: Spacing[4],
-    paddingVertical: Spacing[8],
-    paddingHorizontal: Spacing[10],
-    backgroundColor: CustomerColors.bg,
-  },
-  message: { textAlign: 'center' },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    root: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: c.overlayMedium,
+    },
+    card: {
+      alignItems: 'center',
+      gap: Spacing[4],
+      paddingVertical: Spacing[8],
+      paddingHorizontal: Spacing[10],
+      backgroundColor: c.bg,
+    },
+    message: { textAlign: 'center' },
+  });

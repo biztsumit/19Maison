@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { BottomSheet } from './BottomSheet';
 import { Icon } from './Icon';
 import { Text } from './Text';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemeColors, useThemedStyles } from '@/theme/theme-provider';
 
 export interface SelectOption<T extends string = string> {
   value: T;
@@ -32,6 +34,8 @@ export function Select<T extends string = string>({
   label,
   disabled = false,
 }: Props<T>) {
+  const styles = useThemedStyles(makeStyles);
+  const colors = useThemeColors();
   const [open, setOpen] = useState(false);
   const selected = options.find(o => o.value === value);
 
@@ -52,7 +56,7 @@ export function Select<T extends string = string>({
         <Text variant={selected ? 'body' : 'bodyMuted'} numberOfLines={1} style={styles.flex}>
           {selected?.label ?? placeholder}
         </Text>
-        <Icon name="chevron-down" size={18} color={CustomerColors.textMuted} />
+        <Icon name="chevron-down" size={18} color={colors.textMuted} />
       </Pressable>
 
       <BottomSheet visible={open} onClose={() => setOpen(false)} title={title} snap="large">
@@ -73,7 +77,7 @@ export function Select<T extends string = string>({
                 <Text variant="body" style={styles.flex}>
                   {option.label}
                 </Text>
-                {isSelected && <Icon name="check" size={18} color={CustomerColors.accent} />}
+                {isSelected && <Icon name="check" size={18} color={colors.accent} />}
               </Pressable>
             );
           })}
@@ -83,27 +87,28 @@ export function Select<T extends string = string>({
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: { gap: Spacing[1.5] },
-  trigger: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing[2],
-    height: CustomerLayout.controlHeight,
-    paddingHorizontal: Spacing[4],
-    borderWidth: 1,
-    borderColor: CustomerColors.border,
-  },
-  pressed: { opacity: 0.7 },
-  disabled: { opacity: 0.4 },
-  flex: { flex: 1 },
-  list: { paddingHorizontal: CustomerLayout.screenPaddingH, paddingBottom: Spacing[4] },
-  option: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing[3],
-    paddingVertical: Spacing[4],
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: CustomerColors.border,
-  },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    wrap: { gap: Spacing[1.5] },
+    trigger: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing[2],
+      height: CustomerLayout.controlHeight,
+      paddingHorizontal: Spacing[4],
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    pressed: { opacity: 0.7 },
+    disabled: { opacity: 0.4 },
+    flex: { flex: 1 },
+    list: { paddingHorizontal: CustomerLayout.screenPaddingH, paddingBottom: Spacing[4] },
+    option: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing[3],
+      paddingVertical: Spacing[4],
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: c.border,
+    },
+  });

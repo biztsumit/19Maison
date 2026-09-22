@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { router } from 'expo-router';
 import { useWishlistToggle } from '@/hooks/useWishlistToggle';
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { formatPrice } from '@/utils/formatters';
 import type { Product } from '@/types';
@@ -11,6 +11,8 @@ import { Icon } from '../ui/Icon';
 import { ImageCarousel } from '../ui/ImageCarousel';
 import { Text } from '../ui/Text';
 import { Thumbnail } from '../ui/Thumbnail';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemeColors, useThemedStyles } from '@/theme/theme-provider';
 
 export type ProductCardVariant = 'grid' | 'rail' | 'collector';
 
@@ -41,6 +43,8 @@ export function ProductCard({
   cta,
   style,
 }: Props) {
+  const styles = useThemedStyles(makeStyles);
+  const colors = useThemeColors();
   const { isWishlisted, isPending, toggle } = useWishlistToggle();
 
   const images = product.images.map(i => i.url).filter(Boolean);
@@ -68,7 +72,7 @@ export function ProductCard({
             hitSlop={8}
             accessibilityLabel={`Add ${product.name} to bag`}
           >
-            <Icon name="bag" size={18} color={CustomerColors.text} />
+            <Icon name="bag" size={18} color={colors.text} />
           </Pressable>
         ) : (
           <View />
@@ -87,8 +91,8 @@ export function ProductCard({
             <Icon
               name="heart"
               size={18}
-              color={wishlisted ? CustomerColors.accent : CustomerColors.text}
-              fill={wishlisted ? CustomerColors.accent : 'none'}
+              color={wishlisted ? colors.accent : colors.text}
+              fill={wishlisted ? colors.accent : 'none'}
             />
           </Pressable>
         )}
@@ -130,23 +134,24 @@ export function ProductCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    borderColor: CustomerColors.border,
-    borderRadius: CustomerLayout.cardRadius,
-    backgroundColor: CustomerColors.bg,
-    overflow: 'hidden',
-  },
-  pressed: { opacity: 0.9 },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing[3],
-    paddingTop: Spacing[3],
-  },
-  pendingHeart: { opacity: 0.5 },
-  info: { paddingHorizontal: Spacing[3], paddingBottom: Spacing[3], gap: Spacing[1] },
-  priceRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing[2] },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    card: {
+      borderWidth: 1,
+      borderColor: c.border,
+      borderRadius: CustomerLayout.cardRadius,
+      backgroundColor: c.bg,
+      overflow: 'hidden',
+    },
+    pressed: { opacity: 0.9 },
+    topRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: Spacing[3],
+      paddingTop: Spacing[3],
+    },
+    pendingHeart: { opacity: 0.5 },
+    info: { paddingHorizontal: Spacing[3], paddingBottom: Spacing[3], gap: Spacing[1] },
+    priceRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing[2] },
+  });

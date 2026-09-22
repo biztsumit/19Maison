@@ -2,7 +2,9 @@ import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { CustomerLayout } from '@/theme/customer';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemeColors, useThemedStyles } from '@/theme/theme-provider';
 import { Spacing } from '@/theme/spacing';
 import { Button } from '../ui/Button';
 import { Icon } from '../ui/Icon';
@@ -16,6 +18,33 @@ interface Props {
 
 interface State {
   error: Error | null;
+}
+
+// Split out of the class so the fallback can read the theme: an error boundary has
+// to be a class component, and a class cannot call hooks.
+function ErrorFallback({ error, onReset }: { error: Error; onReset: () => void }) {
+  const styles = useThemedStyles(makeStyles);
+  const colors = useThemeColors();
+
+  return (
+    <SafeAreaView style={styles.root}>
+      <View style={styles.body}>
+        <Icon name="alert" size={40} color={colors.textMuted} />
+        <Text variant="screenTitle" style={styles.center}>
+          Something went wrong
+        </Text>
+        <Text variant="bodyMuted" style={styles.center}>
+          The app ran into an unexpected problem. You can try again from here.
+        </Text>
+        {__DEV__ && (
+          <Text variant="caption" style={styles.center} numberOfLines={6}>
+            {error.message}
+          </Text>
+        )}
+        <Button label="Try again" onPress={onReset} style={styles.action} />
+      </View>
+    </SafeAreaView>
+  );
 }
 
 // A render error anywhere below this point otherwise unmounts the whole tree and
@@ -42,38 +71,20 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     const { error } = this.state;
     if (!error) return this.props.children;
-
-    return (
-      <SafeAreaView style={styles.root}>
-        <View style={styles.body}>
-          <Icon name="alert" size={40} color={CustomerColors.textMuted} />
-          <Text variant="screenTitle" style={styles.center}>
-            Something went wrong
-          </Text>
-          <Text variant="bodyMuted" style={styles.center}>
-            The app ran into an unexpected problem. You can try again from here.
-          </Text>
-          {__DEV__ && (
-            <Text variant="caption" style={styles.center} numberOfLines={6}>
-              {error.message}
-            </Text>
-          )}
-          <Button label="Try again" onPress={this.handleReset} style={styles.action} />
-        </View>
-      </SafeAreaView>
-    );
+    return <ErrorFallback error={error} onReset={this.handleReset} />;
   }
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: CustomerColors.bg },
-  body: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing[3],
-    paddingHorizontal: CustomerLayout.screenPaddingH,
-  },
-  center: { textAlign: 'center' },
-  action: { marginTop: Spacing[4], minWidth: 200 },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    root: { flex: 1, backgroundColor: c.bg },
+    body: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: Spacing[3],
+      paddingHorizontal: CustomerLayout.screenPaddingH,
+    },
+    center: { textAlign: 'center' },
+    action: { marginTop: Spacing[4], minWidth: 200 },
+  });

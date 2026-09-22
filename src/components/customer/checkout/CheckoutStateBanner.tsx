@@ -1,9 +1,10 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { CustomerColors } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import type { CheckoutState } from '@/hooks/useCheckout';
 import { Icon } from '../ui/Icon';
 import { Text } from '../ui/Text';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemeColors, useThemedStyles } from '@/theme/theme-provider';
 
 interface Props {
   state: CheckoutState;
@@ -11,6 +12,8 @@ interface Props {
 }
 
 export function CheckoutStateBanner({ state, onDismiss }: Props) {
+  const styles = useThemedStyles(makeStyles);
+  const colors = useThemeColors();
   if (state.status === 'failed') {
     return (
       <View style={[styles.banner, styles.error]}>
@@ -18,7 +21,7 @@ export function CheckoutStateBanner({ state, onDismiss }: Props) {
           {state.error}
         </Text>
         <Pressable onPress={onDismiss} hitSlop={8} accessibilityLabel="Dismiss error">
-          <Icon name="close" size={18} color={CustomerColors.text} />
+          <Icon name="close" size={18} color={colors.text} />
         </Pressable>
       </View>
     );
@@ -46,14 +49,15 @@ export function CheckoutStateBanner({ state, onDismiss }: Props) {
   return null;
 }
 
-const styles = StyleSheet.create({
-  banner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing[3],
-    padding: Spacing[4],
-  },
-  error: { backgroundColor: CustomerColors.accentMuted },
-  info: { backgroundColor: CustomerColors.bgAlt },
-  flex: { flex: 1 },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    banner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing[3],
+      padding: Spacing[4],
+    },
+    error: { backgroundColor: c.accentMuted },
+    info: { backgroundColor: c.bgAlt },
+    flex: { flex: 1 },
+  });

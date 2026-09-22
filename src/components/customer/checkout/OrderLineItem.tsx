@@ -2,10 +2,11 @@ import { StyleSheet, View } from 'react-native';
 import { Thumbnail } from '../ui/Thumbnail';
 import type { CartItem } from '@/types';
 import type { OrderItem } from '@/types/order.types';
-import { CustomerColors } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { formatPrice } from '@/utils/formatters';
 import { Text } from '../ui/Text';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemedStyles } from '@/theme/theme-provider';
 
 // Cart lines and order lines arrive in different shapes, so both are normalised
 // to this before rendering rather than duplicating the row component.
@@ -41,6 +42,7 @@ interface Props {
 }
 
 export function OrderLineItem({ line }: Props) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.row}>
       <Thumbnail uri={line.imageUrl} style={styles.image} iconSize={20} />
@@ -59,8 +61,9 @@ export function OrderLineItem({ line }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing[3] },
-  image: { width: 56, height: 72, backgroundColor: CustomerColors.bgAlt },
-  info: { flex: 1, gap: Spacing[0.5] },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    row: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing[3] },
+    image: { width: 56, height: 72, backgroundColor: c.bgAlt },
+    info: { flex: 1, gap: Spacing[0.5] },
+  });

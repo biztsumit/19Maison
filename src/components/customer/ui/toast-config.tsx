@@ -1,24 +1,27 @@
 import { StyleSheet, View } from 'react-native';
 import type { ToastConfig, ToastConfigParams } from 'react-native-toast-message';
-import { CustomerColors } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { Icon } from './Icon';
 import type { IconName } from './Icon';
 import { Text } from './Text';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemeColors, useThemedStyles } from '@/theme/theme-provider';
 
 type Tone = 'success' | 'error' | 'info';
 
-const TONES: Record<Tone, { icon: IconName; color: string }> = {
-  success: { icon: 'check', color: CustomerColors.success },
-  error: { icon: 'alert', color: CustomerColors.error },
-  info: { icon: 'alert', color: CustomerColors.accent },
-};
+const tones = (c: CustomerPalette): Record<Tone, { icon: IconName; color: string }> => ({
+  success: { icon: 'check', color: c.success },
+  error: { icon: 'alert', color: c.error },
+  info: { icon: 'alert', color: c.accent },
+});
 
 // Dark card with a coloured accent rail, rather than the library's stock green and
 // red banners — those were the one piece of unthemed chrome left in the customer
 // flow. Dark on a light app reads as system feedback rather than page content.
 function ToastCard({ tone, text1, text2 }: { tone: Tone } & ToastConfigParams<unknown>) {
-  const { icon, color } = TONES[tone];
+  const styles = useThemedStyles(makeStyles);
+  const colors = useThemeColors();
+  const { icon, color } = tones(colors)[tone];
 
   return (
     <View style={styles.card}>
@@ -46,19 +49,20 @@ export const toastConfig: ToastConfig = {
   info: props => <ToastCard tone="info" {...props} />,
 };
 
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing[3],
-    width: '92%',
-    minHeight: 56,
-    paddingVertical: Spacing[3],
-    paddingRight: Spacing[4],
-    paddingLeft: Spacing[4] + 3,
-    backgroundColor: CustomerColors.bgDark,
-    overflow: 'hidden',
-  },
-  rail: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 3 },
-  body: { flex: 1, gap: 2 },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    card: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing[3],
+      width: '92%',
+      minHeight: 56,
+      paddingVertical: Spacing[3],
+      paddingRight: Spacing[4],
+      paddingLeft: Spacing[4] + 3,
+      backgroundColor: c.bgNotice,
+      overflow: 'hidden',
+    },
+    rail: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 3 },
+    body: { flex: 1, gap: 2 },
+  });

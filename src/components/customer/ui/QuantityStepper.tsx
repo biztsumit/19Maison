@@ -1,8 +1,9 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { CustomerColors } from '@/theme/customer';
 import { Spacing } from '@/theme/spacing';
 import { Icon } from './Icon';
 import { Text } from './Text';
+import type { CustomerPalette } from '@/theme/palette';
+import { useThemedStyles } from '@/theme/theme-provider';
 
 interface Props {
   value: number;
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export function QuantityStepper({ value, onChange, min = 1, max, hint, disabled = false }: Props) {
+  const styles = useThemedStyles(makeStyles);
   const atMax = max !== undefined && value >= max;
   const atMin = value <= min;
 
@@ -52,16 +54,17 @@ export function QuantityStepper({ value, onChange, min = 1, max, hint, disabled 
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: { gap: Spacing[1] },
-  box: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: CustomerColors.border,
-    alignSelf: 'flex-start',
-  },
-  btn: { paddingHorizontal: Spacing[3], paddingVertical: Spacing[2.5] },
-  btnDisabled: { opacity: 0.3 },
-  value: { minWidth: 32, textAlign: 'center' },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    wrap: { gap: Spacing[1] },
+    box: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: c.border,
+      alignSelf: 'flex-start',
+    },
+    btn: { paddingHorizontal: Spacing[3], paddingVertical: Spacing[2.5] },
+    btnDisabled: { opacity: 0.3 },
+    value: { minWidth: 32, textAlign: 'center' },
+  });

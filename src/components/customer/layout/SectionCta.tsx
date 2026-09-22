@@ -1,5 +1,7 @@
 import { Pressable, StyleSheet } from 'react-native';
-import { CustomerColors, CustomerText } from '@/theme/customer';
+import { CustomerText } from '@/theme/customer';
+import type { CustomerPalette } from '@/theme/palette';
+import { useTheme, useThemedStyles } from '@/theme/theme-provider';
 import { Spacing } from '@/theme/spacing';
 import { FontSize } from '@/theme/typography';
 import { Text } from '../ui/Text';
@@ -10,8 +12,18 @@ interface Props {
   tone?: 'dark' | 'light';
 }
 
+// `tone="light"` is the variant that sits on a dark band, so it is pinned to the
+// inverse colours in both schemes rather than following the page.
+function invertedColor(c: CustomerPalette, tone: 'dark' | 'light', pressed: boolean): string {
+  if (tone === 'light') return pressed ? c.bgDark : c.textInverse;
+  return pressed ? c.onInverse : c.text;
+}
+
 // Web inverts this on hover; on touch the pressed state carries that affordance.
 export function SectionCta({ label, onPress, tone = 'dark' }: Props) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <Pressable
       onPress={onPress}
@@ -24,7 +36,11 @@ export function SectionCta({ label, onPress, tone = 'dark' }: Props) {
     >
       {({ pressed }) => (
         <Text
-          style={[CustomerText.ctaLabel, styles.label, { color: invertedColor(tone, pressed) }]}
+          style={[
+            CustomerText.ctaLabel,
+            styles.label,
+            { color: invertedColor(colors, tone, pressed) },
+          ]}
         >
           {label}
         </Text>
@@ -33,21 +49,17 @@ export function SectionCta({ label, onPress, tone = 'dark' }: Props) {
   );
 }
 
-function invertedColor(tone: 'dark' | 'light', pressed: boolean): string {
-  if (tone === 'light') return pressed ? CustomerColors.text : CustomerColors.textInverse;
-  return pressed ? CustomerColors.textInverse : CustomerColors.text;
-}
-
-const styles = StyleSheet.create({
-  cta: {
-    alignSelf: 'flex-start',
-    borderWidth: 1,
-    paddingHorizontal: Spacing[4],
-    paddingVertical: Spacing[2.5],
-  },
-  dark: { borderColor: CustomerColors.borderStrong },
-  light: { borderColor: CustomerColors.textInverse },
-  pressedDark: { backgroundColor: CustomerColors.bgDark },
-  pressedLight: { backgroundColor: CustomerColors.bg },
-  label: { fontSize: FontSize.sm },
-});
+const makeStyles = (c: CustomerPalette) =>
+  StyleSheet.create({
+    cta: {
+      alignSelf: 'flex-start',
+      borderWidth: 1,
+      paddingHorizontal: Spacing[4],
+      paddingVertical: Spacing[2.5],
+    },
+    dark: { borderColor: c.borderStrong },
+    light: { borderColor: c.textInverse },
+    pressedDark: { backgroundColor: c.inverseSurface },
+    pressedLight: { backgroundColor: c.textInverse },
+    label: { fontSize: FontSize.sm },
+  });
