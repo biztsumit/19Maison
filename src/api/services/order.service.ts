@@ -8,13 +8,33 @@ import type {
   PaginatedResponse,
 } from '@/types';
 
+export interface OrderListResult {
+  orders: Order[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
 export const OrderService = {
-  async getOrders(params?: OrderListParams): Promise<PaginatedResponse<Order>> {
-    const res = await apiClient.get<ApiResponse<PaginatedResponse<Order>>>(
+  // The list endpoint may return a bare array or a pagination envelope; the web
+  // client assumes the former while mobile's types assumed the latter. Tolerate both.
+  async getOrders(params?: OrderListParams): Promise<OrderListResult> {
+    const res = await apiClient.get<ApiResponse<Order[] | PaginatedResponse<Order>>>(
       Endpoints.orders.list,
       { params },
     );
-    return res.data.data;
+    const payload = res.data.data;
+
+    if (Array.isArray(payload)) {
+      return { orders: payload, total: payload.length, page: 1, totalPages: 1 };
+    }
+
+    return {
+      orders: payload?.data ?? [],
+      total: payload?.total ?? 0,
+      page: payload?.page ?? 1,
+      totalPages: payload?.totalPages ?? 1,
+    };
   },
 
   async getOrder(id: string): Promise<Order> {

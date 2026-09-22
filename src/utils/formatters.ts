@@ -1,3 +1,5 @@
+import type { Address } from '@/types/user.types';
+
 export function formatPrice(amount: number, currency = 'INR'): string {
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
@@ -40,4 +42,23 @@ export function formatDiscount(original: number, sale: number): string {
 
 export function formatOrderNumber(orderNumber: string): string {
   return `#${orderNumber.toUpperCase()}`;
+}
+
+export function formatAddressName(address: Address): string {
+  return `${address.firstName} ${address.lastName}`.trim();
+}
+
+// Renders an address as display lines, skipping the parts that are absent.
+// Shared by the checkout address cards, the profile address list and order detail.
+export function formatAddressLines(address: Address): string[] {
+  const street = [address.address, address.apartment].filter(Boolean).join(', ');
+  const locality = [address.city, address.state].filter(Boolean).join(', ');
+
+  return [
+    formatAddressName(address),
+    street,
+    [locality, address.pincode].filter(Boolean).join(' '),
+    address.country,
+    address.phone,
+  ].filter((line): line is string => Boolean(line && line.trim()));
 }

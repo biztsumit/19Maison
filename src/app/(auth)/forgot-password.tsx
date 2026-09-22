@@ -1,5 +1,12 @@
 import { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -33,7 +40,10 @@ export default function ForgotPasswordScreen() {
         <View style={styles.iconBtn} />
       </View>
 
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.kav}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.kav}
+      >
         <View style={styles.content}>
           {sent ? (
             <View style={styles.card}>
@@ -44,7 +54,11 @@ export default function ForgotPasswordScreen() {
               <Text style={styles.cardDesc}>
                 Check your inbox for a password reset link. It may take a few minutes to arrive.
               </Text>
-              <TouchableOpacity style={styles.primaryBtn} onPress={() => router.back()} activeOpacity={0.85}>
+              <TouchableOpacity
+                style={styles.primaryBtn}
+                onPress={() => router.back()}
+                activeOpacity={0.85}
+              >
                 <Text style={styles.primaryBtnText}>BACK TO LOGIN</Text>
               </TouchableOpacity>
             </View>
@@ -52,7 +66,7 @@ export default function ForgotPasswordScreen() {
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Forgot Password</Text>
               <Text style={styles.cardDesc}>
-                Enter your phone number or email and we'll send you a reset link.
+                Enter your phone number or email and we&apos;ll send you a reset link.
               </Text>
 
               <View style={styles.inputBox}>
@@ -134,7 +148,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     justifyContent: 'center',
   },
-  input: { fontFamily: Font.regular, fontSize: FontSize.md, color: Colors.textDark, paddingVertical: 0 },
+  input: {
+    fontFamily: Font.regular,
+    fontSize: FontSize.md,
+    color: Colors.textDark,
+    paddingVertical: 0,
+  },
   primaryBtn: {
     backgroundColor: Colors.textDark,
     height: 56,
@@ -142,7 +161,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 30,
   },
-  primaryBtnText: { fontFamily: Font.semibold, fontSize: FontSize.md, color: Colors.white, letterSpacing: 2 },
+  primaryBtnText: {
+    fontFamily: Font.semibold,
+    fontSize: FontSize.md,
+    color: Colors.white,
+    letterSpacing: 2,
+  },
   backLink: { alignItems: 'center' },
   backLinkText: { fontFamily: Font.medium, fontSize: FontSize.md, color: Colors.textGray },
 });

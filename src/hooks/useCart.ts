@@ -6,6 +6,7 @@ import {
   updateCartItemThunk,
   removeCartItemThunk,
   applyCouponThunk,
+  clearCartThunk,
 } from '@/store/slices/cart.slice';
 import {
   selectCart,
@@ -14,12 +15,11 @@ import {
   selectCartTotal,
   selectCartLoading,
 } from '@/store/selectors/cart.selectors';
-import { selectIsAuthenticated } from '@/store/selectors/auth.selectors';
 import type { AddToCartRequest } from '@/types';
+import { haptics } from '@/utils/haptics';
 
 export function useCart() {
   const dispatch = useAppDispatch();
-  const isAuthenticated = useAppSelector(selectIsAuthenticated);
 
   const cart = useAppSelector(selectCart);
   const items = useAppSelector(selectCartItems);
@@ -27,31 +27,32 @@ export function useCart() {
   const total = useAppSelector(selectCartTotal);
   const isLoading = useAppSelector(selectCartLoading);
 
-  const fetchCart = useCallback(
-    () => dispatch(fetchCartThunk({ isAuthenticated })),
-    [dispatch, isAuthenticated],
-  );
+  const fetchCart = useCallback(() => dispatch(fetchCartThunk()), [dispatch]);
 
   const addToCart = useCallback(
-    (data: AddToCartRequest) => dispatch(addToCartThunk({ isAuthenticated, data })),
-    [dispatch, isAuthenticated],
+    (data: AddToCartRequest) => {
+      haptics.success();
+      return dispatch(addToCartThunk(data));
+    },
+    [dispatch],
   );
 
   const updateQuantity = useCallback(
-    (cartItemId: string, quantity: number) =>
-      dispatch(updateCartItemThunk({ isAuthenticated, cartItemId, quantity })),
-    [dispatch, isAuthenticated],
+    (cartItemId: string, quantity: number) => {
+      haptics.tap();
+      return dispatch(updateCartItemThunk({ cartItemId, quantity }));
+    },
+    [dispatch],
   );
 
   const removeItem = useCallback(
-    (cartItemId: string) => dispatch(removeCartItemThunk({ isAuthenticated, cartItemId })),
-    [dispatch, isAuthenticated],
-  );
-
-  const applyCoupon = useCallback(
-    (code: string) => dispatch(applyCouponThunk(code)),
+    (cartItemId: string) => dispatch(removeCartItemThunk(cartItemId)),
     [dispatch],
   );
+
+  const applyCoupon = useCallback((code: string) => dispatch(applyCouponThunk(code)), [dispatch]);
+
+  const clearCartRemote = useCallback(() => dispatch(clearCartThunk()), [dispatch]);
 
   return {
     cart,
@@ -59,11 +60,11 @@ export function useCart() {
     itemCount,
     total,
     isLoading,
-    isAuthenticated,
     fetchCart,
     addToCart,
     updateQuantity,
     removeItem,
     applyCoupon,
+    clearCartRemote,
   };
 }

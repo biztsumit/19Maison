@@ -101,7 +101,8 @@ export interface ApiProductBrand {
 
 export interface ApiProduct {
   id: string;
-  name: string;
+  modelNumber?: string;
+  name?: string;
   slug: string;
   description?: string;
   shortDescription?: string;
@@ -159,7 +160,7 @@ export function mapApiProduct(api: ApiProduct): Product {
 
   return {
     id: api.id,
-    name: api.name,
+    name: api.modelNumber ?? api.name ?? '',
     slug: api.slug,
     description: api.description,
     shortDescription: api.shortDescription,
@@ -181,22 +182,23 @@ export function mapApiProduct(api: ApiProduct): Product {
   };
 }
 
-// ── Detail API types (GET /products/:id) — different image shape from list ───
+// ── Detail API types (GET /products/{slug}) ─────────────────────────────────
+// Images use the same {documentId, imageUrl} shape as the list endpoint, and the
+// money/rating fields arrive as strings (Prisma Decimal), so they must be parsed.
 
 export interface ApiProductDetailImage {
-  id: string;
-  url: string;
+  documentId: string;
+  imageUrl: string;
 }
 
 export interface ApiProductDetailVariant {
   id: string;
   sku: string;
   size?: number;
-  frameColor: string;
-  frameColorCode?: string;
-  salePrice: number; // number (not string) in detail response
-  discountPercentage?: number;
-  discountedPrice: number;
+  colorCode?: string;
+  salePrice: string | number;
+  discountPercentage?: string | number;
+  discountedPrice?: string | number;
   inStock: boolean;
   stock?: number;
   images?: ApiProductDetailImage[];
@@ -204,44 +206,50 @@ export interface ApiProductDetailVariant {
 
 export interface ApiProductDetail {
   id: string;
-  name: string;
+  modelNumber?: string;
+  name?: string;
   slug: string;
   description?: string;
   shortDescription?: string;
-  averageRating?: number;
+  averageRating?: string | number;
   totalRatings?: number;
-  brand: { id: string; name: string; slug?: string };
+  brand?: { id: string; name: string; slug?: string } | null;
   images: ApiProductDetailImage[];
   variants: ApiProductDetailVariant[];
 }
 
-export function mapApiProductDetail(api: ApiProductDetail): Product {
-  const images: ProductImage[] = (api.images ?? []).map((img, i) => ({
-    id: img.id,
-    url: img.url,
+const toNumber = (value: string | number | undefined): number =>
+  typeof value === 'number' ? value : Number(value ?? 0) || 0;
+
+const mapDetailImages = (images: ApiProductDetailImage[] | undefined): ProductImage[] =>
+  (images ?? []).map((img, i) => ({
+    id: img.documentId,
+    url: img.imageUrl,
     isPrimary: i === 0,
     order: i,
   }));
 
-  const variants: ProductVariant[] = (api.variants ?? []).map(v => ({
-    id: v.id,
-    sku: v.sku,
-    size: v.size,
-    frameColor: v.frameColor,
-    frameColorCode: v.frameColorCode,
-    lensColor: '',
-    salePrice: v.salePrice,
-    discountedPrice: v.discountedPrice,
-    discountPercentage: v.discountPercentage,
-    inStock: v.inStock,
-    stock: v.stock,
-    images: (v.images ?? []).map((img, i) => ({
-      id: img.id,
-      url: img.url,
-      isPrimary: i === 0,
-      order: i,
-    })),
-  }));
+export function mapApiProductDetail(api: ApiProductDetail): Product {
+  const variants: ProductVariant[] = (api.variants ?? []).map(v => {
+    const salePrice = toNumber(v.salePrice);
+    const discounted = toNumber(v.discountedPrice);
+    return {
+      id: v.id,
+      sku: v.sku,
+      size: v.size,
+      // The API calls this colorCode; the app-wide name is frameColor.
+      frameColor: v.colorCode ?? '',
+      frameColorCode: v.colorCode,
+      lensColor: '',
+      salePrice,
+      // 0 means "no discount", so it must not win over salePrice.
+      discountedPrice: discounted > 0 ? discounted : undefined,
+      discountPercentage: toNumber(v.discountPercentage),
+      inStock: v.inStock,
+      stock: v.stock,
+      images: mapDetailImages(v.images),
+    };
+  });
 
   const bestVariant = variants[0];
   const price = bestVariant?.discountedPrice ?? bestVariant?.salePrice ?? 0;
@@ -252,16 +260,18 @@ export function mapApiProductDetail(api: ApiProductDetail): Product {
 
   return {
     id: api.id,
-    name: api.name,
+    // The API field is modelNumber; `name` is not returned.
+    name: api.modelNumber ?? api.name ?? '',
     slug: api.slug,
     description: api.description,
     shortDescription: api.shortDescription,
-    brand: { id: api.brand.id, name: api.brand.name, slug: api.brand.slug },
+    // brand is nullable for unbranded products.
+    brand: { id: api.brand?.id ?? '', name: api.brand?.name ?? '', slug: api.brand?.slug },
     price,
     comparePrice,
-    images,
+    images: mapDetailImages(api.images),
     variants,
-    rating: api.averageRating,
+    rating: toNumber(api.averageRating),
     reviewCount: api.totalRatings,
   };
 }
@@ -291,6 +301,9 @@ export interface ProductListParams {
   isActive?: boolean;
   isFeatured?: boolean;
   isExclusive?: boolean;
+  // Filter groups come from /products/filters at runtime, and the API expects the
+  // group id verbatim as the query key, so the set cannot be enumerated here.
+  [filterGroupId: string]: string | number | boolean | string[] | undefined;
 }
 
 export interface ProductListResponse {

@@ -2,6 +2,7 @@ import type { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'a
 import axios from 'axios';
 import { StorageService } from '@/services/storage.service';
 import { Endpoints } from '@/constants/api';
+import { emitUnauthorized } from '../auth-events';
 
 let isRefreshing = false;
 let failedQueue: Array<{
@@ -59,15 +60,16 @@ export function applyAuthInterceptors(client: AxiosInstance): void {
         const refreshToken = await StorageService.getRefreshToken();
         if (!refreshToken) throw new Error('No refresh token');
 
-        const { data } = await axios.post(
-          `${client.defaults.baseURL}${Endpoints.auth.refresh}`,
-          { refreshToken },
-        );
+        const { data } = await axios.post(`${client.defaults.baseURL}${Endpoints.auth.refresh}`, {
+          refreshToken,
+        });
 
-        // New API returns tokens flat inside data.data: { accessToken, refreshToken }
-        const tokenPayload = data.data ?? data;
-        const { accessToken, refreshToken: newRefreshToken } =
-          tokenPayload.tokens ?? tokenPayload;
+        // Refresh returns a flat { accessToken, refreshToken? }. The refresh token is
+        // optional: when the backend omits it the existing one stays valid, so falling
+        // back is essential — writing undefined over it kills the next refresh.
+        const tokenPayload = data?.data ?? data;
+        const accessToken: string = tokenPayload.accessToken;
+        const newRefreshToken: string = tokenPayload.refreshToken ?? refreshToken;
         await StorageService.setTokens(accessToken, newRefreshToken);
         processQueue(null, accessToken);
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
@@ -75,6 +77,7 @@ export function applyAuthInterceptors(client: AxiosInstance): void {
       } catch (err) {
         processQueue(err, null);
         await StorageService.clearTokens();
+        emitUnauthorized();
         return Promise.reject(err);
       } finally {
         isRefreshing = false;

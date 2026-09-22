@@ -9,4 +9,6 @@ export {
   TextStyles,
 } from './typography';
 export { Spacing, BorderRadius, Layout } from './spacing';
-export { Shadows } from './shadows';
+export { Shadows, LightShadows } from './shadows';
+export { CustomerColors, CustomerText, CustomerLayout } from './customer';
+export type { CustomerTextVariant } from './customer';

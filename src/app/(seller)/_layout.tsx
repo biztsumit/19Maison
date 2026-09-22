@@ -6,6 +6,9 @@ import { Spacing } from '@/theme/spacing';
 import { FontSize, LetterSpacing } from '@/theme/typography';
 import { Text } from '@/components/common/Text';
 
+// Content height of the bar, excluding the bottom safe-area inset.
+const TAB_BAR_HEIGHT = Platform.select({ ios: 60, android: 58 }) as number;
+
 function TabIcon({ label, icon, focused }: { label: string; icon: string; focused: boolean }) {
   return (
     <View style={styles.tabItem}>
@@ -22,7 +25,15 @@ export default function SellerLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarStyle: [styles.tabBar, { paddingBottom: insets.bottom }],
+        tabBarStyle: [
+          styles.tabBar,
+          {
+            // height is border-box in RN, so the inset extends the bar instead of
+            // eating into it — 3-button nav (~48dp) would otherwise squash the icons.
+            height: TAB_BAR_HEIGHT + insets.bottom,
+            paddingBottom: insets.bottom + Spacing[2],
+          },
+        ],
         tabBarShowLabel: false,
       }}
     >
@@ -69,7 +80,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    height: Platform.select({ ios: 80, android: 65 }),
     paddingTop: Spacing[2],
   },
   tabItem: {

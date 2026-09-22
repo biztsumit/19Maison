@@ -33,32 +33,30 @@ export const Endpoints = {
     collectorsEdition: '/products/collectors',
   },
   brands: {
+    // The home rail uses /brands/active, not the unfiltered /brands.
+    active: '/brands/active',
     list: '/brands',
     detail: (slug: string) => `/brands/${slug}`,
   },
   cart: {
-    // Authenticated cart
     get: '/cart',
     add: '/cart/items',
     update: (itemId: string) => `/cart/items/${itemId}`,
     remove: (itemId: string) => `/cart/items/${itemId}`,
-    clear: '/cart/clear',
+    clear: '/cart',
     coupon: '/cart/coupon',
-    // Guest cart
-    guestCreate: '/cart/guest',
-    guestGet: '/cart/guest',
-    guestAdd: '/cart/guest/items',
-    guestUpdate: (itemId: string) => `/cart/guest/items/${itemId}`,
-    guestRemove: (itemId: string) => `/cart/guest/items/${itemId}`,
-    guestMerge: '/cart/guest/merge',
+  },
+  // NOTE: not yet confirmed to exist server-side — see the newsletter backend question.
+  newsletter: {
+    subscribe: '/newsletter/subscribe',
   },
   // Navigation (for Category tab)
   navigation: '/navigation',
   wishlist: {
     get: '/wishlist',
-    add: '/wishlist',
-    remove: (productId: string) => `/wishlist/${productId}`,
-    check: (productId: string) => `/wishlist/check/${productId}`,
+    add: '/wishlist/items',
+    remove: (productId: string) => `/wishlist/items/${productId}`,
+    clear: '/wishlist',
   },
   orders: {
     list: '/orders',
@@ -74,10 +72,13 @@ export const Endpoints = {
     get: '/profile',
     update: '/profile',
     uploadAvatar: '/profile/avatar',
-    addresses: '/profile/addresses',
-    addAddress: '/profile/addresses',
-    updateAddress: (id: string) => `/profile/addresses/${id}`,
-    deleteAddress: (id: string) => `/profile/addresses/${id}`,
+  },
+  // Top-level, matching the web storefront's production client.
+  addresses: {
+    list: '/addresses',
+    create: '/addresses',
+    detail: (id: string) => `/addresses/${id}`,
+    setDefault: (id: string) => `/addresses/${id}/default`,
   },
   notifications: {
     list: '/notifications',

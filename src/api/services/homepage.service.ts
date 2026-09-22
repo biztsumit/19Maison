@@ -1,15 +1,16 @@
-import { apiClient } from '../client';
 import { Endpoints } from '@/constants/api';
 import type {
   HomepageData,
-  HomepageResponse,
   HomepageProductItem,
+  HomepageResponse,
   LatestDropResponse,
 } from '@/types/homepage.types';
+import { apiClient } from '../client';
 
 export const HomepageService = {
   async getHomepage(): Promise<HomepageData> {
     const res = await apiClient.get<HomepageResponse>(Endpoints.homepage);
+    console.log('homepage>>.>>>11>', res.data);
     return res.data.data;
   },
 

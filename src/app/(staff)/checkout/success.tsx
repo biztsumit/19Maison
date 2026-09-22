@@ -1,13 +1,9 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
+import { STAFF_HOME } from '@/constants/routes';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Text } from '@/components/common/Text';
 import { Font, FontSize } from '@/theme/typography';
 
@@ -19,12 +15,7 @@ export default function StaffOrderSuccessScreen() {
       <StatusBar style="dark" />
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <View
-        style={[
-          styles.header,
-          { paddingTop: insets.top + 50 },
-        ]}
-      >
+      <View style={[styles.header, { paddingTop: insets.top + 50 }]}>
         <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
           <Text style={styles.backArrow}>←</Text>
         </TouchableOpacity>
@@ -35,17 +26,11 @@ export default function StaffOrderSuccessScreen() {
       <ScrollView
         style={styles.scroll}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingBottom: 120 },
-        ]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 120 }]}
       >
         {/* ── Order item row ─────────────────────────────────────────────────── */}
         <View style={styles.orderRow}>
-          <LinearGradient
-            colors={['#2A2A2A', '#1A1A1A']}
-            style={styles.productImage}
-          />
+          <LinearGradient colors={['#2A2A2A', '#1A1A1A']} style={styles.productImage} />
           <View style={styles.orderInfo}>
             <Text style={styles.brand}>GUCCI</Text>
             <Text style={styles.model}>GG145S-001</Text>
@@ -86,16 +71,11 @@ export default function StaffOrderSuccessScreen() {
       </ScrollView>
 
       {/* ── Bottom sticky bar ─────────────────────────────────────────────────── */}
-      <View
-        style={[
-          styles.bottomBar,
-          { paddingBottom: 40 + insets.bottom },
-        ]}
-      >
+      <View style={[styles.bottomBar, { paddingBottom: 40 + insets.bottom }]}>
         <TouchableOpacity
           style={styles.continueButton}
           activeOpacity={0.85}
-          onPress={() => router.replace('/(staff)')}
+          onPress={() => router.replace(STAFF_HOME)}
         >
           <Text style={styles.continueButtonText}>CONTINUE SHOPPING</Text>
         </TouchableOpacity>

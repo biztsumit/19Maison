@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Thumbnail } from '@/components/customer/ui/Thumbnail';
 import {
   View,
   StyleSheet,
@@ -9,7 +10,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { Image } from 'expo-image';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
@@ -37,11 +37,7 @@ function ProductRow({
 
   return (
     <View style={styles.productRow}>
-      <Image
-        source={{ uri: image?.url ?? 'https://via.placeholder.com/80' }}
-        style={styles.productThumb}
-        contentFit="cover"
-      />
+      <Thumbnail uri={image?.url} tone="dark" style={styles.productThumb} />
       <View style={styles.productInfo}>
         <Text variant="caption" color="muted" style={styles.productBrand}>
           {product.brand.name.toUpperCase()}
@@ -56,10 +52,7 @@ function ProductRow({
           <View
             style={[styles.stockBadge, isLowStock ? styles.stockBadgeLow : styles.stockBadgeOk]}
           >
-            <Text
-              variant="caption"
-              style={{ color: isLowStock ? Colors.error : Colors.success }}
-            >
+            <Text variant="caption" style={{ color: isLowStock ? Colors.error : Colors.success }}>
               {totalStock} in stock
             </Text>
           </View>

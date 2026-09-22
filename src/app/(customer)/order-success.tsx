@@ -1,135 +1,132 @@
 import { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, Easing } from 'react-native';
+import { CUSTOMER_HOME } from '@/constants/routes';
+import { Animated, StyleSheet, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
-import { TouchableOpacity } from 'react-native';
-import { Text } from '@/components/common/Text';
-import { Font, FontSize } from '@/theme/typography';
-import { formatPrice } from '@/utils/formatters';
+import {
+  Button,
+  CopyButton,
+  CustomerScreen,
+  Divider,
+  Icon,
+  PriceRow,
+  Skeleton,
+  Text,
+} from '@/components/customer';
+import { OrderLineItem, orderItemToLine } from '@/components/customer/checkout/OrderLineItem';
+import { useOrder } from '@/hooks/useOrders';
+import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { BorderRadius, Spacing } from '@/theme/spacing';
+import { formatOrderNumber } from '@/utils/formatters';
 
 export default function OrderSuccessScreen() {
-  const insets = useSafeAreaInsets();
-  const { orderId, orderNumber, total, method } = useLocalSearchParams<{
-    orderId: string;
-    orderNumber: string;
-    total: string;
-    method: string;
-  }>();
+  const { orderId, method } = useLocalSearchParams<{ orderId: string; method?: string }>();
+  // Params carry only what the create call returned, which is empty when a
+  // reserved order is resumed. The order itself is the source of truth.
+  const { data: order, isLoading } = useOrder(orderId);
 
-  const scaleAnim = useRef(new Animated.Value(0)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scale = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.sequence([
-      Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, friction: 5, tension: 80 }),
-      Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true, easing: Easing.out(Easing.ease) }),
-    ]).start();
-  }, []);
+    Animated.spring(scale, { toValue: 1, useNativeDriver: true, friction: 5, tension: 80 }).start();
+  }, [scale]);
 
-  const isCOD = method === 'COD';
-  const totalFormatted = total ? formatPrice(parseFloat(total)) : '';
+  const isCod = method === 'COD';
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <StatusBar style="dark" />
-
-      <View style={styles.content}>
-        {/* Animated checkmark */}
-        <Animated.View style={[styles.checkCircle, { transform: [{ scale: scaleAnim }] }]}>
-          <Text style={styles.checkMark}>✓</Text>
+    <CustomerScreen contentContainerStyle={styles.content}>
+      <View style={styles.hero}>
+        <Animated.View style={[styles.check, { transform: [{ scale }] }]}>
+          <Icon name="check" size={34} color={CustomerColors.accent} strokeWidth={3} />
         </Animated.View>
 
-        <Animated.View style={[styles.textBlock, { opacity: fadeAnim }]}>
-          <Text style={styles.title}>Order Placed!</Text>
-          <Text style={styles.subtitle}>
-            {isCOD
-              ? 'Your order has been placed successfully. Pay when it arrives.'
-              : 'Payment successful. Your order is confirmed.'}
-          </Text>
-
-          {/* Order details */}
-          <View style={styles.detailsCard}>
-            {orderNumber ? (
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Order No.</Text>
-                <Text style={styles.detailValue}>{orderNumber}</Text>
-              </View>
-            ) : null}
-            {totalFormatted ? (
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Amount</Text>
-                <Text style={styles.detailValue}>{totalFormatted}</Text>
-              </View>
-            ) : null}
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Payment</Text>
-              <Text style={styles.detailValue}>{isCOD ? 'Cash on Delivery' : 'Razorpay'}</Text>
-            </View>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Status</Text>
-              <View style={styles.statusBadge}>
-                <Text style={styles.statusText}>{isCOD ? 'PROCESSING' : 'PAID'}</Text>
-              </View>
-            </View>
-          </View>
-        </Animated.View>
+        <Text variant="screenTitle" style={styles.center}>
+          Thank you
+        </Text>
+        <Text variant="bodyMuted" style={styles.center}>
+          {isCod
+            ? 'Your order is confirmed. Pay when it arrives.'
+            : 'Your payment is confirmed and your order is being prepared.'}
+        </Text>
       </View>
 
-      {/* CTAs */}
-      <Animated.View style={[styles.ctaBar, { paddingBottom: Math.max(insets.bottom, 24), opacity: fadeAnim }]}>
-        {orderId ? (
-          <TouchableOpacity
-            style={styles.primaryBtn}
-            onPress={() => router.replace({ pathname: '/(customer)/order/[id]', params: { id: orderId } })}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.primaryBtnText}>Track Order</Text>
-          </TouchableOpacity>
-        ) : null}
-        <TouchableOpacity
-          style={styles.secondaryBtn}
-          onPress={() => router.replace('/(customer)')}
-          activeOpacity={0.85}
-        >
-          <Text style={styles.secondaryBtnText}>Continue Shopping</Text>
-        </TouchableOpacity>
-      </Animated.View>
-    </View>
+      <View style={styles.card}>
+        <View style={styles.cardHead}>
+          <Text variant="sectionHeading">Order details</Text>
+          {order?.orderNumber && (
+            <CopyButton value={order.orderNumber} label={formatOrderNumber(order.orderNumber)} />
+          )}
+        </View>
+
+        {isLoading ? (
+          <View style={styles.list}>
+            <Skeleton height={72} />
+            <Skeleton height={72} />
+          </View>
+        ) : order ? (
+          <>
+            <View style={styles.list}>
+              {order.items?.map(item => (
+                <OrderLineItem key={item.id} line={orderItemToLine(item)} />
+              ))}
+            </View>
+
+            <Divider />
+
+            <PriceRow label="Sub total" value={order.subtotal} />
+            {order.discount > 0 && <PriceRow label="Discount" value={-order.discount} />}
+            {order.tax > 0 && <PriceRow label="Tax" value={order.tax} />}
+            {order.shipping > 0 && <PriceRow label="Shipping" value={order.shipping} />}
+            <PriceRow label="Total" value={order.total} emphasis="total" />
+          </>
+        ) : (
+          <Text variant="bodyMuted">We could not load the order details right now.</Text>
+        )}
+      </View>
+
+      <View style={styles.actions}>
+        {Boolean(orderId) && (
+          <Button
+            label="Track order"
+            variant="outline"
+            onPress={() => router.replace(`/(customer)/order/${orderId}`)}
+            fullWidth
+          />
+        )}
+        <Button
+          label="Continue shopping"
+          variant="solid"
+          onPress={() => router.replace(CUSTOMER_HOME)}
+          fullWidth
+        />
+      </View>
+    </CustomerScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
-  content: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, gap: 32 },
-
-  checkCircle: {
-    width: 96, height: 96, borderRadius: 48,
-    backgroundColor: '#000', alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.15, shadowRadius: 20, elevation: 8,
+  content: { padding: CustomerLayout.screenPaddingH, gap: Spacing[6] },
+  hero: { alignItems: 'center', gap: Spacing[3], paddingTop: Spacing[10] },
+  check: {
+    width: 84,
+    height: 84,
+    borderRadius: BorderRadius.full,
+    backgroundColor: CustomerColors.bgDark,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  checkMark: { fontSize: 44, color: '#D4AF37', lineHeight: 52 },
-
-  textBlock: { alignItems: 'center', gap: 12, width: '100%' },
-  title: { fontFamily: Font.semibold, fontSize: 28, color: '#000', lineHeight: 36, textAlign: 'center' },
-  subtitle: { fontFamily: Font.regular, fontSize: FontSize.base, color: '#626262', lineHeight: 22, textAlign: 'center' },
-
-  detailsCard: {
-    width: '100%', borderWidth: 1, borderColor: '#DDDDDD',
-    padding: 20, marginTop: 8, gap: 16,
+  center: { textAlign: 'center' },
+  card: {
+    gap: Spacing[4],
+    padding: Spacing[4],
+    borderWidth: 1,
+    borderColor: CustomerColors.border,
   },
-  detailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  detailLabel: { fontFamily: Font.regular, fontSize: FontSize.base, color: '#626262', lineHeight: 20 },
-  detailValue: { fontFamily: Font.medium, fontSize: FontSize.md, color: '#000', lineHeight: 20 },
-
-  statusBadge: {
-    backgroundColor: '#000', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 4,
+  cardHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing[3],
   },
-  statusText: { fontFamily: Font.semibold, fontSize: 11, color: '#D4AF37', letterSpacing: 0.5 },
-
-  ctaBar: { paddingHorizontal: 32, paddingTop: 16, gap: 12, borderTopWidth: 1, borderTopColor: '#DDDDDD' },
-  primaryBtn: { backgroundColor: '#000', borderRadius: 8, paddingVertical: 16, alignItems: 'center' },
-  primaryBtnText: { fontFamily: Font.semibold, fontSize: FontSize.md, color: '#FFF', lineHeight: 21 },
-  secondaryBtn: { borderWidth: 1, borderColor: '#DDDDDD', borderRadius: 8, paddingVertical: 16, alignItems: 'center' },
-  secondaryBtnText: { fontFamily: Font.semibold, fontSize: FontSize.md, color: '#000', lineHeight: 21 },
+  list: { gap: Spacing[4] },
+  actions: { gap: Spacing[3] },
 });

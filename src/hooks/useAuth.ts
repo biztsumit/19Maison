@@ -1,3 +1,5 @@
+import { displayNameFor } from '@/constants/roles';
+import { clearRedirectIntent } from '@/utils/redirect-intent';
 import { useAppDispatch, useAppSelector } from '@/store';
 import {
   selectAuth,
@@ -27,10 +29,7 @@ export function useAuth() {
   const role = useAppSelector(selectUserRole);
   const pendingPhone = useAppSelector(selectPendingPhone);
 
-  const login = useCallback(
-    (data: LoginRequest) => dispatch(loginThunk(data)),
-    [dispatch],
-  );
+  const login = useCallback((data: LoginRequest) => dispatch(loginThunk(data)), [dispatch]);
 
   const staffLogin = useCallback(
     (data: StaffLoginRequest) => dispatch(staffLoginThunk(data)),
@@ -48,6 +47,9 @@ export function useAuth() {
   );
 
   const logout = useCallback(async () => {
+    // Drop any deep-link intent captured at launch, so signing back in always
+    // lands on the homepage rather than a half-remembered destination.
+    clearRedirectIntent();
     await dispatch(logoutThunk());
     dispatch(clearCart());
     dispatch(clearWishlist());
@@ -69,6 +71,6 @@ export function useAuth() {
     logout,
     dismissError,
     // Display name helper
-    displayName: user ? `${user.firstName} ${user.lastName}`.trim() : null,
+    displayName: displayNameFor(user),
   };
 }

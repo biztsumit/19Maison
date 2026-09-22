@@ -19,7 +19,7 @@ export function CustomerHeader({ showSearch = true, onSearchPress }: CustomerHea
     if (onSearchPress) {
       onSearchPress();
     } else {
-      router.push('/(customer)/explore');
+      router.push('/(customer)/(tabs)/explore');
     }
   };
 
@@ -36,11 +36,7 @@ export function CustomerHeader({ showSearch = true, onSearchPress }: CustomerHea
 
       {/* Search bar — Figma: #F5F5F5 bg, borderRadius 12, padding 12 16 */}
       {showSearch && (
-        <TouchableOpacity
-          style={styles.searchBar}
-          onPress={handleSearchPress}
-          activeOpacity={0.8}
-        >
+        <TouchableOpacity style={styles.searchBar} onPress={handleSearchPress} activeOpacity={0.8}>
           <Text style={styles.searchIcon}>⌕</Text>
           <Text style={styles.searchPlaceholder}>Search</Text>
         </TouchableOpacity>

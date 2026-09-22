@@ -24,78 +24,78 @@ export interface Cart {
   couponDiscount?: number;
 }
 
-// ── API wire types (raw response from /cart and /cart/guest) ──────────────
-
-export interface ApiCartVariantProduct {
-  id: string;
-  name: string;
-  slug: string;
-}
-
-export interface ApiCartVariant {
-  id: string;
-  sku: string;
-  discountedPrice: number;
-  discount: number;
-  quantity: number; // stock quantity
-  product: ApiCartVariantProduct;
-}
+// ── API wire types (raw response from /cart) ──────────────────────────────
+// The line item is FLAT: there is no nested `variant` or `variant.product`.
+// `price` is the backend-computed LINE TOTAL (unit x quantity), not the unit price.
 
 export interface ApiCartItem {
   id: string;
+  variantId?: string;
   quantity: number;
   price: number;
-  variant: ApiCartVariant;
+  stock?: number;
+  brandName?: string;
+  modelNumber?: string;
+  variantName?: string;
+  colorCode?: string;
+  imageUrl?: string;
 }
 
 export interface ApiCart {
-  id: string;
+  id?: string;
   userId?: string;
-  guestToken?: string;
   subtotal: number;
-  itemCount: number;
+  itemCount?: number;
   items: ApiCartItem[];
 }
 
 // ── Mapper: API → internal ────────────────────────────────────────────────
 
 export function mapApiCartItem(item: ApiCartItem): CartItem {
-  const v = item.variant ?? {} as ApiCartVariant;
-  const p = v.product ?? {} as ApiCartVariantProduct;
+  const lineTotal = item.price ?? 0;
+  const quantity = item.quantity || 1;
+  const title = item.modelNumber ?? item.variantName ?? '';
+  const images = item.imageUrl
+    ? [{ id: item.id, url: item.imageUrl, isPrimary: true, order: 0 }]
+    : [];
+
   return {
     id: item.id,
     product: {
-      id: p.id ?? '',
-      name: p.name ?? '',
-      slug: p.slug ?? '',
-      brand: { id: '', name: '' },
-      price: item.price ?? v.discountedPrice ?? 0,
-      images: [], // API cart does not return product images
+      id: '',
+      name: title,
+      // The cart payload carries no slug, so rows are not navigable.
+      slug: '',
+      brand: { id: '', name: item.brandName ?? '' },
+      price: lineTotal / quantity,
+      images,
       variants: [],
     },
     variant: {
-      id: v.id ?? '',
-      sku: v.sku ?? '',
+      id: item.variantId ?? '',
+      sku: '',
       size: undefined,
-      frameColor: '',
+      frameColor: item.colorCode ?? item.variantName ?? '',
       lensColor: '',
       lensType: '',
-      salePrice: item.price ?? 0,
-      discountedPrice: v.discountedPrice,
-      inStock: (v.quantity ?? 0) > 0,
+      salePrice: lineTotal / quantity,
+      inStock: (item.stock ?? 0) > 0,
+      stock: item.stock,
+      images,
     },
     quantity: item.quantity,
-    unitPrice: item.price ?? v.discountedPrice ?? 0,
-    totalPrice: (item.price ?? v.discountedPrice ?? 0) * item.quantity,
+    unitPrice: lineTotal / quantity,
+    totalPrice: lineTotal,
   };
 }
 
 export function mapApiCart(api: ApiCart): Cart {
   return {
-    id: api.id,
+    id: api.id ?? '',
     userId: api.userId ?? '',
     items: (api.items ?? []).map(mapApiCartItem),
     subtotal: api.subtotal ?? 0,
+    // The cart endpoint returns no tax/shipping/discount; the order does.
     discount: 0,
     tax: 0,
     shipping: 0,

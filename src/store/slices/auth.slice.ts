@@ -17,53 +17,59 @@ const initialState: AuthState = {
   tokens: null,
   isAuthenticated: false,
   isLoading: false,
+  bootstrapped: false,
   error: null,
   pendingPhone: null,
 };
 
 // ── Login: phone + password → tokens + user ───────────────────────────────
+// Login returns tokens only. The user must be fetched separately from /auth/me —
+// the login payload nests it under a role-specific key (`pos` for staff), which is
+// why the production web client never reads it from here either.
 export const loginThunk = createAsyncThunk('auth/login', async (data: LoginRequest) => {
-  const response = await AuthService.login(data);
-  await StorageService.setTokens(response.accessToken, response.refreshToken);
-  await StorageService.setUser(response.user);
-  return response;
+  const tokens = await AuthService.login(data);
+  await StorageService.setTokens(tokens.accessToken, tokens.refreshToken);
+  const user = await AuthService.getMe();
+  await StorageService.setUser(user);
+  return { ...tokens, user };
 });
 
-// ── Staff login: username + password → tokens + user (role: EMPLOYEE) ────
+// ── Staff login: username + password → tokens, then /auth/me ────────────
 export const staffLoginThunk = createAsyncThunk(
   'auth/staffLogin',
   async (data: StaffLoginRequest) => {
-    const response = await AuthService.staffLogin(data);
-    await StorageService.setTokens(response.accessToken, response.refreshToken);
-    await StorageService.setUser(response.user);
-    return response;
+    const tokens = await AuthService.staffLogin(data);
+    await StorageService.setTokens(tokens.accessToken, tokens.refreshToken);
+    const user = await AuthService.getMe();
+    await StorageService.setUser(user);
+    return { ...tokens, user };
   },
 );
 
 // ── Register: sends OTP, stores phone for verification step ──────────────
-export const registerThunk = createAsyncThunk(
-  'auth/register',
-  async (data: RegisterRequest) => {
-    const response = await AuthService.register(data);
-    return { ...response, phone: data.phone };
-  },
-);
+export const registerThunk = createAsyncThunk('auth/register', async (data: RegisterRequest) => {
+  const response = await AuthService.register(data);
+  return { ...response, phone: data.phone };
+});
 
 // ── Verify OTP: phone + otp → tokens + user ───────────────────────────────
-export const verifyOtpThunk = createAsyncThunk(
-  'auth/verifyOtp',
-  async (data: VerifyOtpRequest) => {
-    const response = await AuthService.verifyOtp(data);
-    await StorageService.setTokens(response.accessToken, response.refreshToken);
-    await StorageService.setUser(response.user);
-    return response;
-  },
-);
+export const verifyOtpThunk = createAsyncThunk('auth/verifyOtp', async (data: VerifyOtpRequest) => {
+  const tokens = await AuthService.verifyOtp(data);
+  await StorageService.setTokens(tokens.accessToken, tokens.refreshToken);
+  const user = await AuthService.getMe();
+  await StorageService.setUser(user);
+  return { ...tokens, user };
+});
 
 // ── Logout ────────────────────────────────────────────────────────────────
+// Signing out must always succeed locally. A failing (or 401-ing) /auth/logout
+// used to reject this thunk, and with only a fulfilled case the session stayed
+// in state — which is why the first tap appeared to do nothing.
 export const logoutThunk = createAsyncThunk('auth/logout', async () => {
   try {
     await AuthService.logout();
+  } catch {
+    // Server-side sign-out is best effort; the local session goes regardless.
   } finally {
     await StorageService.clearTokens();
   }
@@ -95,6 +101,17 @@ const authSlice = createSlice({
       state.tokens = action.payload;
     },
     clearPendingPhone(state) {
+      state.pendingPhone = null;
+    },
+    // Local-only session teardown, dispatched when a token refresh fails.
+    // Tokens are already cleared by the interceptor; this stops the UI believing
+    // it is still signed in while every request 401s.
+    forceLogout(state) {
+      state.user = null;
+      state.tokens = null;
+      state.isAuthenticated = false;
+      state.isLoading = false;
+      state.error = null;
       state.pendingPhone = null;
     },
   },
@@ -179,24 +196,34 @@ const authSlice = createSlice({
       });
 
     // ── Logout ─────────────────────────────────────────────────────────
-    builder.addCase(logoutThunk.fulfilled, state => {
+    const endSession = (state: AuthState) => {
       state.user = null;
       state.tokens = null;
       state.isAuthenticated = false;
+      state.isLoading = false;
       state.error = null;
       state.pendingPhone = null;
-    });
+    };
+    builder.addCase(logoutThunk.fulfilled, endSession).addCase(logoutThunk.rejected, endSession);
 
     // ── Restore session ────────────────────────────────────────────────
-    builder.addCase(restoreSessionThunk.fulfilled, (state, action) => {
-      if (action.payload) {
-        state.user = action.payload.user;
-        state.tokens = action.payload.tokens;
-        state.isAuthenticated = true;
-      }
-    });
+    // Both cases must set `bootstrapped`. Without the rejected case a throwing
+    // SecureStore read (corrupt keychain entry) leaves the app on the splash forever.
+    builder
+      .addCase(restoreSessionThunk.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.user = action.payload.user;
+          state.tokens = action.payload.tokens;
+          state.isAuthenticated = true;
+        }
+        state.bootstrapped = true;
+      })
+      .addCase(restoreSessionThunk.rejected, state => {
+        state.bootstrapped = true;
+      });
   },
 });
 
-export const { clearError, setUser, updateTokens, clearPendingPhone } = authSlice.actions;
+export const { clearError, setUser, updateTokens, clearPendingPhone, forceLogout } =
+  authSlice.actions;
 export default authSlice.reducer;

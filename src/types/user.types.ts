@@ -1,15 +1,18 @@
+// Mirrors the shape the web storefront posts to /addresses, which is the
+// implementation currently in production. `state` and `country` are full names
+// (e.g. "Maharashtra", "India"), not ISO codes.
 export interface Address {
   id: string;
-  userId: string;
-  label: string;
-  fullName: string;
+  userId?: string;
+  firstName: string;
+  lastName: string;
   phone: string;
-  line1: string;
-  line2?: string;
+  address: string;
+  apartment?: string;
   city: string;
   state: string;
-  pincode: string;
   country: string;
+  pincode: string;
   isDefault: boolean;
 }
 
@@ -21,7 +24,8 @@ export interface CustomerProfile {
   avatar?: string;
   gender?: 'male' | 'female' | 'other';
   dateOfBirth?: string;
-  addresses: Address[];
+  // Addresses are fetched separately via /addresses.
+  addresses?: Address[];
   wishlistCount: number;
   orderCount: number;
   createdAt: string;
@@ -34,15 +38,6 @@ export interface UpdateProfileRequest {
   dateOfBirth?: string;
 }
 
-export interface AddressRequest {
-  label: string;
-  fullName: string;
-  phone: string;
-  line1: string;
-  line2?: string;
-  city: string;
-  state: string;
-  pincode: string;
-  country: string;
+export type AddressRequest = Omit<Address, 'id' | 'userId' | 'isDefault'> & {
   isDefault?: boolean;
-}
+};

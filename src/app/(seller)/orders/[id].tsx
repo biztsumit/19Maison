@@ -73,14 +73,10 @@ export default function SellerOrderDetailScreen() {
 
   const handleStatusUpdate = () => {
     if (!nextStatus) return;
-    Alert.alert(
-      'Update Status',
-      `Mark order as "${nextStatus.replace(/_/g, ' ')}"?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Confirm', onPress: () => statusMutation.mutate(nextStatus) },
-      ],
-    );
+    Alert.alert('Update Status', `Mark order as "${nextStatus.replace(/_/g, ' ')}"?`, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Confirm', onPress: () => statusMutation.mutate(nextStatus) },
+    ]);
   };
 
   if (isLoading) {
@@ -91,7 +87,9 @@ export default function SellerOrderDetailScreen() {
             <TouchableOpacity onPress={() => router.back()}>
               <Text color="muted">← Back</Text>
             </TouchableOpacity>
-            <Text variant="label" style={styles.headerTitle}>ORDER</Text>
+            <Text variant="label" style={styles.headerTitle}>
+              ORDER
+            </Text>
             <View style={{ width: 40 }} />
           </View>
           <View style={styles.content}>
@@ -113,7 +111,9 @@ export default function SellerOrderDetailScreen() {
           <TouchableOpacity onPress={() => router.back()}>
             <Text color="muted">← Back</Text>
           </TouchableOpacity>
-          <Text variant="label" style={styles.headerTitle}>ORDER DETAIL</Text>
+          <Text variant="label" style={styles.headerTitle}>
+            ORDER DETAIL
+          </Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -125,12 +125,10 @@ export default function SellerOrderDetailScreen() {
                 {formatOrderNumber(order.orderNumber)}
               </Text>
               <Text variant="bodySmall" color="muted">
-                {formatDate(order.createdAt)}
+                {order.createdAt ? formatDate(order.createdAt) : ''}
               </Text>
             </View>
-            <View
-              style={[styles.statusBadge, { borderColor: STATUS_COLOR[order.status] }]}
-            >
+            <View style={[styles.statusBadge, { borderColor: STATUS_COLOR[order.status] }]}>
               <Text variant="label" style={{ color: STATUS_COLOR[order.status], letterSpacing: 1 }}>
                 {order.status.replace(/_/g, ' ').toUpperCase()}
               </Text>
@@ -141,24 +139,25 @@ export default function SellerOrderDetailScreen() {
 
           {/* Customer */}
           <View style={styles.section}>
-            <Text variant="label" color="secondary" style={styles.sectionTitle}>CUSTOMER</Text>
+            <Text variant="label" color="secondary" style={styles.sectionTitle}>
+              CUSTOMER
+            </Text>
             <View style={styles.customerCard}>
               <View style={styles.customerAvatar}>
                 <Text style={styles.avatarText}>
-                  {order.shippingAddress.fullName.charAt(0).toUpperCase()}
+                  {(order.customerName ?? '?').charAt(0).toUpperCase()}
                 </Text>
               </View>
               <View style={{ flex: 1 }}>
                 <Text variant="titleMedium" color="primary">
-                  {order.shippingAddress.fullName}
+                  {order.customerName}
                 </Text>
                 <Text variant="bodySmall" color="muted">
-                  {order.shippingAddress.phone}
+                  {order.shippingAddress?.phone}
                 </Text>
                 <Text variant="bodySmall" color="secondary" numberOfLines={2}>
-                  {order.shippingAddress.line1},{' '}
-                  {order.shippingAddress.city}, {order.shippingAddress.state} -{' '}
-                  {order.shippingAddress.pincode}
+                  {order.shippingAddress?.address}, {order.shippingAddress?.city},{' '}
+                  {order.shippingAddress?.state} - {order.shippingAddress?.pincode}
                 </Text>
               </View>
             </View>
@@ -168,25 +167,26 @@ export default function SellerOrderDetailScreen() {
 
           {/* Items */}
           <View style={styles.section}>
-            <Text variant="label" color="secondary" style={styles.sectionTitle}>ITEMS</Text>
+            <Text variant="label" color="secondary" style={styles.sectionTitle}>
+              ITEMS
+            </Text>
             {order.items.map(item => {
-              const img = item.product.images.find(i => i.isPrimary) ?? item.product.images[0];
               return (
                 <View key={item.id} style={styles.orderItem}>
                   <Image
-                    source={{ uri: img?.url ?? '' }}
+                    source={{ uri: item.imageUrl ?? '' }}
                     style={styles.itemImage}
                     contentFit="cover"
                   />
                   <View style={styles.itemInfo}>
                     <Text variant="bodySmall" color="muted" style={{ letterSpacing: 1 }}>
-                      {item.product.brand.name.toUpperCase()}
+                      {(item.brandName ?? '').toUpperCase()}
                     </Text>
                     <Text variant="titleMedium" color="primary" numberOfLines={1}>
-                      {item.product.name}
+                      {item.modelNumber}
                     </Text>
                     <Text variant="bodySmall" color="secondary">
-                      {item.variant.frameColor} × {item.quantity}
+                      {item.variantName} × {item.quantity}
                     </Text>
                     <Text variant="price" color="gold">
                       {formatPrice(item.totalPrice)}
@@ -201,30 +201,50 @@ export default function SellerOrderDetailScreen() {
 
           {/* Payment */}
           <View style={styles.section}>
-            <Text variant="label" color="secondary" style={styles.sectionTitle}>PAYMENT</Text>
+            <Text variant="label" color="secondary" style={styles.sectionTitle}>
+              PAYMENT
+            </Text>
             <View style={styles.priceRow}>
-              <Text variant="body" color="secondary">Subtotal</Text>
-              <Text variant="body" color="primary">{formatPrice(order.subtotal)}</Text>
+              <Text variant="body" color="secondary">
+                Subtotal
+              </Text>
+              <Text variant="body" color="primary">
+                {formatPrice(order.subtotal)}
+              </Text>
             </View>
             {order.discount > 0 && (
               <View style={styles.priceRow}>
-                <Text variant="body" color="secondary">Discount</Text>
-                <Text variant="body" color="success">−{formatPrice(order.discount)}</Text>
+                <Text variant="body" color="secondary">
+                  Discount
+                </Text>
+                <Text variant="body" color="success">
+                  −{formatPrice(order.discount)}
+                </Text>
               </View>
             )}
             <View style={styles.priceRow}>
-              <Text variant="body" color="secondary">Shipping</Text>
-              <Text variant="body" color="primary">{formatPrice(order.shipping)}</Text>
+              <Text variant="body" color="secondary">
+                Shipping
+              </Text>
+              <Text variant="body" color="primary">
+                {formatPrice(order.shipping)}
+              </Text>
             </View>
             <Divider />
             <View style={styles.priceRow}>
-              <Text variant="headingSmall" color="primary">Total</Text>
-              <Text variant="headingSmall" color="gold">{formatPrice(order.total)}</Text>
+              <Text variant="headingSmall" color="primary">
+                Total
+              </Text>
+              <Text variant="headingSmall" color="gold">
+                {formatPrice(order.total)}
+              </Text>
             </View>
             <View style={styles.paymentMethod}>
-              <Text variant="caption" color="muted">Payment via</Text>
+              <Text variant="caption" color="muted">
+                Payment via
+              </Text>
               <Text variant="bodySmall" color="primary">
-                {order.paymentMethod.toUpperCase()}
+                {(order.paymentMethod ?? '').toUpperCase()}
               </Text>
             </View>
           </View>

@@ -31,7 +31,10 @@ export const registerSchema = z.object({
 
 // POST /auth/verify-otp (phone is in Redux pendingPhone)
 export const otpSchema = z.object({
-  otp: z.string().length(6, 'Enter the 6-digit code').regex(/^\d{6}$/, 'Digits only'),
+  otp: z
+    .string()
+    .length(6, 'Enter the 6-digit code')
+    .regex(/^\d{6}$/, 'Digits only'),
 });
 
 export const forgotPasswordSchema = z.object({
@@ -39,15 +42,16 @@ export const forgotPasswordSchema = z.object({
 });
 
 export const addressSchema = z.object({
-  label: z.string().min(1, 'Label is required'),
-  fullName: z.string().min(2, 'Full name is required'),
+  firstName: z.string().min(2, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
   phone: phoneE164Schema,
-  line1: z.string().min(5, 'Address is required'),
-  line2: z.string().optional(),
+  address: z.string().min(5, 'Address is required'),
+  apartment: z.string().optional(),
   city: z.string().min(2, 'City is required'),
   state: z.string().min(2, 'State is required'),
-  pincode: z.string().regex(/^\d{6}$/, 'Enter a valid 6-digit pincode'),
   country: z.string().default('India'),
+  pincode: z.string().regex(/^\d{6}$/, 'Enter a valid 6-digit pincode'),
+  isDefault: z.boolean().optional(),
 });
 
 export const reviewSchema = z.object({

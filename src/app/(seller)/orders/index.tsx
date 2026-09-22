@@ -60,7 +60,7 @@ function OrderCard({ order }: { order: Order }) {
 
       <View style={styles.orderCardMeta}>
         <Text variant="bodySmall" color="muted">
-          {formatDate(order.createdAt)}
+          {order.createdAt ? formatDate(order.createdAt) : ''}
         </Text>
         <Text variant="bodySmall" color="muted">
           {order.items.length} item{order.items.length > 1 ? 's' : ''}
@@ -69,7 +69,7 @@ function OrderCard({ order }: { order: Order }) {
 
       {firstItem && (
         <Text variant="bodySmall" color="secondary" numberOfLines={1}>
-          {firstItem.product.name}
+          {firstItem.modelNumber}
           {order.items.length > 1 ? ` +${order.items.length - 1} more` : ''}
         </Text>
       )}
@@ -80,7 +80,7 @@ function OrderCard({ order }: { order: Order }) {
             Customer
           </Text>
           <Text variant="bodySmall" color="primary">
-            {order.shippingAddress.fullName}
+            {order.customerName}
           </Text>
         </View>
         <Text variant="price" color="gold">
@@ -96,8 +96,7 @@ export default function SellerOrdersScreen() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['seller-orders', activeTab],
-    queryFn: () =>
-      SellerService.getOrders({ status: activeTab !== 'all' ? activeTab : undefined }),
+    queryFn: () => SellerService.getOrders({ status: activeTab !== 'all' ? activeTab : undefined }),
   });
 
   const orders = data?.data ?? [];

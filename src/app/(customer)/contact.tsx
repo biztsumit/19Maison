@@ -1,175 +1,115 @@
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { Image } from 'expo-image';
-import { router } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Font, FontSize } from '@/theme/typography';
-import { Text } from '@/components/common/Text';
+import { Linking, Pressable, StyleSheet, View } from 'react-native';
+import { CustomerHeader, CustomerScreen, Divider, Icon, Text } from '@/components/customer';
+import { CustomerColors, CustomerLayout } from '@/theme/customer';
+import { Spacing } from '@/theme/spacing';
+import type { IconName } from '@/components/customer';
 
-function BackHeader({ title }: { title: string }) {
-  const insets = useSafeAreaInsets();
-  return (
-    <View style={[styles.backHeader, { paddingTop: insets.top + 8 }]}>
-      <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
-        <Text style={styles.backArrow}>←</Text>
-      </TouchableOpacity>
-      <Text style={styles.backTitle}>{title}</Text>
-      <View style={styles.backSpacer} />
-    </View>
-  );
+const PHONE = '+919876543210';
+const EMAIL = 'care@19maison.com';
+const WHATSAPP = '919876543210';
+
+interface Row {
+  key: string;
+  icon: IconName;
+  label: string;
+  value: string;
+  url: string;
 }
 
-interface ContactRowProps {
-  icon: string;
-  children: React.ReactNode;
-}
-
-function ContactRow({ icon, children }: ContactRowProps) {
-  return (
-    <View style={styles.contactRow}>
-      <Text style={styles.contactIcon}>{icon}</Text>
-      <View style={styles.contactContent}>{children}</View>
-    </View>
-  );
-}
+const ROWS: Row[] = [
+  {
+    key: 'whatsapp',
+    icon: 'phone',
+    label: 'WhatsApp',
+    value: 'Chat with us',
+    url: `https://wa.me/${WHATSAPP}`,
+  },
+  { key: 'phone', icon: 'phone', label: 'Call us', value: PHONE, url: `tel:${PHONE}` },
+  { key: 'mail', icon: 'mail', label: 'Email', value: EMAIL, url: `mailto:${EMAIL}` },
+];
 
 export default function ContactScreen() {
+  const open = async (url: string) => {
+    const supported = await Linking.canOpenURL(url);
+    if (supported) Linking.openURL(url);
+  };
+
   return (
-    <View style={styles.container}>
-      <StatusBar style="dark" />
-      <BackHeader title="Contact Us" />
+    <CustomerScreen header={<CustomerHeader variant="back" title="Contact us" />}>
+      <View style={styles.body}>
+        <Text variant="screenTitle">Let us connect</Text>
+        <Text variant="bodyMuted">
+          Our specialists are available Monday to Saturday, 10am to 7pm.
+        </Text>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Heading */}
-        <View style={styles.headingContainer}>
-          <Text style={styles.heading}>Let&apos;s Connect!</Text>
+        <View style={styles.rows}>
+          {ROWS.map(row => (
+            <Pressable
+              key={row.key}
+              onPress={() => open(row.url)}
+              accessibilityRole="link"
+              accessibilityLabel={`${row.label}: ${row.value}`}
+              style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+            >
+              <View style={styles.iconBox}>
+                <Icon name={row.icon} size={20} color={CustomerColors.textInverse} />
+              </View>
+              <View style={styles.rowText}>
+                <Text variant="cardTitle">{row.label}</Text>
+                <Text variant="bodySmallMuted">{row.value}</Text>
+              </View>
+              <Icon name="chevron-right" size={18} color={CustomerColors.textMuted} />
+            </Pressable>
+          ))}
         </View>
 
-        {/* Contact info rows */}
-        <View style={styles.contactSection}>
-          {/* WhatsApp */}
-          <ContactRow icon="💬">
-            <TouchableOpacity hitSlop={4}>
-              <Text style={styles.contactLink}>Chat now</Text>
-            </TouchableOpacity>
-          </ContactRow>
+        <Divider />
 
-          {/* Phone */}
-          <ContactRow icon="📞">
-            <Text style={styles.contactValue}>+91 78965-78545</Text>
-          </ContactRow>
-
-          {/* Email */}
-          <ContactRow icon="✉">
-            <Text style={styles.contactValue}>contact@19maison.com</Text>
-          </ContactRow>
-
-          {/* Address */}
-          <ContactRow icon="📍">
-            <Text style={styles.contactValue}>Address, City, State, Country, Zip code</Text>
-          </ContactRow>
-        </View>
-
-        {/* Map image */}
-        <View style={styles.mapContainer}>
-          <Image
-            source={require('../../../assets/images/contact-map.png')}
-            style={styles.mapImage}
-            contentFit="cover"
-          />
-        </View>
-
-        <View style={{ height: 40 }} />
-      </ScrollView>
-    </View>
+        <Text variant="sectionHeading">Visit the boutique</Text>
+        <Text variant="bodyMuted">
+          19 Maison flagship store. Tap below to open directions in your maps app.
+        </Text>
+        <Pressable
+          onPress={() => open('https://maps.google.com/?q=19+Maison')}
+          accessibilityRole="link"
+          style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+        >
+          <View style={styles.iconBox}>
+            <Icon name="map-pin" size={20} color={CustomerColors.textInverse} />
+          </View>
+          <View style={styles.rowText}>
+            <Text variant="cardTitle">Get directions</Text>
+            <Text variant="bodySmallMuted">Open in maps</Text>
+          </View>
+          <Icon name="chevron-right" size={18} color={CustomerColors.textMuted} />
+        </Pressable>
+      </View>
+    </CustomerScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
+  body: {
+    gap: Spacing[4],
+    paddingHorizontal: CustomerLayout.screenPaddingH,
+    paddingVertical: Spacing[5],
   },
-
-  // Back header
-  backHeader: {
-    paddingBottom: 20,
-    paddingHorizontal: 24,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(221,221,221,0.87)',
+  rows: { gap: Spacing[3] },
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: Spacing[4],
+    padding: Spacing[4],
+    borderWidth: 1,
+    borderColor: CustomerColors.border,
   },
-  backArrow: {
-    fontSize: 22,
-    color: '#000000',
-  },
-  backTitle: {
-    fontFamily: Font.semibold,
-    fontSize: FontSize['2xl'],
-    color: '#000000',
-    flex: 1,
-    textAlign: 'center',
-  },
-  backSpacer: {
-    width: 38,
-  },
-
-  // Heading
-  headingContainer: {
-    padding: 24,
-  },
-  heading: {
-    fontFamily: Font.semibold,
-    fontSize: FontSize['2xl'],
-    color: '#000000',
-    lineHeight: FontSize['2xl'] * 1.3,
-  },
-
-  // Contact section
-  contactSection: {
-    paddingHorizontal: 24,
-    gap: 24,
-  },
-  contactRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  contactIcon: {
-    fontSize: 20,
-    lineHeight: 26,
-  },
-  contactContent: {
-    flex: 1,
+  pressed: { opacity: 0.7 },
+  iconBox: {
+    width: 40,
+    height: 40,
+    backgroundColor: CustomerColors.bgDark,
+    alignItems: 'center',
     justifyContent: 'center',
   },
-  contactValue: {
-    fontFamily: Font.regular,
-    fontSize: FontSize.md,
-    color: '#626262',
-    lineHeight: FontSize.md * 1.3,
-  },
-  contactLink: {
-    fontFamily: Font.regular,
-    fontSize: FontSize.md,
-    color: '#626262',
-    textDecorationLine: 'underline',
-    lineHeight: FontSize.md * 1.3,
-  },
-
-  // Map
-  mapContainer: {
-    marginHorizontal: 24,
-    marginTop: 32,
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  mapImage: {
-    width: '100%',
-    height: 300,
-    borderRadius: 8,
-  },
+  rowText: { flex: 1, gap: Spacing[0.5] },
 });

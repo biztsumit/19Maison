@@ -1,12 +1,13 @@
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { Colors } from '@/theme/colors';
+import { View, StyleSheet } from 'react-native';
+import { Spinner } from '@/components/customer/ui/Spinner';
+import { CustomerColors } from '@/theme/customer';
 
 // Root index — the auth gate in _layout.tsx handles all redirects.
 // This screen is shown only during the brief session-restore check.
 export default function Index() {
   return (
     <View style={styles.container}>
-      <ActivityIndicator color={Colors.gold} size="large" />
+      <Spinner size="lg" trackColor={CustomerColors.overlayLight} />
     </View>
   );
 }
@@ -14,7 +15,8 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.black,
+    // Matches the native splash exactly, so the handover has no seam.
+    backgroundColor: CustomerColors.bgDark,
     alignItems: 'center',
     justifyContent: 'center',
   },

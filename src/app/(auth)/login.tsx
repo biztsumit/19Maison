@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -22,6 +22,7 @@ import { loginSchema } from '@/utils/validators';
 import type { LoginSchema } from '@/utils/validators';
 import { loginThunk } from '@/store/slices/auth.slice';
 import { Text } from '@/components/common/Text';
+import { takeAuthNotice } from '@/utils/auth-notice';
 
 const googleLogo = require('../../../assets/images/google-logo.png');
 
@@ -34,6 +35,10 @@ export default function LoginScreen() {
   const { login, isLoading } = useAuth();
   const insets = useSafeAreaInsets();
   const [showPassword, setShowPassword] = useState(false);
+
+  // Set by the auth gate when it refuses a session, e.g. a staff account.
+  const [notice, setNotice] = useState<string | null>(null);
+  useEffect(() => setNotice(takeAuthNotice()), []);
 
   const {
     control,
@@ -78,6 +83,12 @@ export default function LoginScreen() {
           {/* Form */}
           <View style={styles.formContainer}>
             <Text style={styles.title}>Login</Text>
+
+            {Boolean(notice) && (
+              <View style={styles.notice}>
+                <Text style={styles.noticeText}>{notice}</Text>
+              </View>
+            )}
 
             {/* Fields */}
             <View style={styles.fields}>
@@ -168,17 +179,9 @@ export default function LoginScreen() {
 
             {/* Sign up link */}
             <View style={styles.bottomRow}>
-              <Text style={styles.bottomBase}>Don't have account, </Text>
+              <Text style={styles.bottomBase}>Don&apos;t have account, </Text>
               <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
                 <Text style={styles.bottomLink}>Sign up</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Staff login link */}
-            <View style={styles.bottomRow}>
-              <Text style={styles.bottomBase}>Staff? </Text>
-              <TouchableOpacity onPress={() => router.push('/(auth)/staff-login')}>
-                <Text style={styles.bottomLink}>Login here</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -189,6 +192,19 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
+  notice: {
+    marginBottom: 16,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: Colors.gold,
+    backgroundColor: 'rgba(212, 175, 55, 0.12)',
+  },
+  noticeText: {
+    fontFamily: Font.regular,
+    fontSize: FontSize.base,
+    lineHeight: FontSize.base * 1.5,
+    color: TEXT_WHITE,
+  },
   container: {
     flex: 1,
     backgroundColor: '#000000',
